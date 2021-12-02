@@ -1,0 +1,56 @@
+﻿<header id="header" class="fixed-top d-flex align-items-center">
+    <div class="container d-flex justify-content-between align-items-center">
+
+        <div class="logo">
+            <h1 class="text-light"><a asp-controller="Home" asp-action="Index"><span class="red-color">Я</span><span>ПЕДАГОГ</span></a></h1>
+
+        </div>
+
+        <nav id="navbar" class="navbar">
+            <ul>
+                <li><a asp-controller="Home" asp-action="Index">Главная</a></li>
+                <li><a asp-controller="Home" asp-action="About">О себе</a></li>
+                <li><a asp-controller="Home" asp-action="Blog">Блог</a></li>
+                <li><a asp-controller="Home" asp-action="Contacts">Контакты</a></li>
+                <li class="dropdown">
+                    <a href="#"><span>Дополнительная информация</span> <i class="bi bi-chevron-down"></i></a>
+                    <ul>
+                        <li><a asp-controller="AdditionalInformation" asp-action="ForParents">Для родителей</a></li>
+                    </ul>
+                </li>
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <li class="dropdown">
+                        @{ 
+                            string name;
+                            if (User.Identity.Name == "Admin")
+                                name = "Елена Тимофеева";
+                            else if (User.Identity.Name == "Superadmin")
+                                name = "Администратор";
+                            else
+                                name = "user";
+                        }
+                        <a href="#"><span>@name</span> <i class="bi bi-chevron-down"></i></a>
+                        <ul>
+                            <li><a asp-controller="Account" asp-action="Index">Админ-панель</a></li>
+                            <li>
+                                <form method="post" asp-controller="Account" asp-action="Logout">
+                                    <button style="margin-left:15px" type="submit" class="btn btn-danger">
+                                        Выход
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+
+                }
+                else
+                {
+                    <li><a asp-controller="Account" asp-action="Login">Войти</a></li>
+                }
+            </ul>
+            <i class="bi bi-list mobile-nav-toggle"></i>
+        </nav>
+
+    </div>
+</header>

@@ -1,0 +1,92 @@
+﻿@model Test.ViewModels.ArticleViewModel
+<main id="main">
+
+    <section class="breadcrumbs">
+        <div class="container">
+
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>
+                    <a asp-controller="Home" asp-action="Index">Главная</a>
+                    / <a asp-controller="Home" asp-action="Blog">Блог</a> 
+                    / @Model.Title
+                </h2>
+            </div>
+
+        </div>
+    </section>
+    <section id="blog" class="blog">
+        <div class="container" data-aos="fade-up">
+
+            <div class="row">
+
+                <div class="col-lg-12 entries">
+
+                    <article class="entry entry-single">
+
+                        <div class="entry-img">
+                            <img src="@("~/img/blog/title/" + Model.ImageName)" asp-append-version="true" alt="" class="img-fluid">
+                        </div>
+
+                        <h2 class="entry-title">
+                            @Model.Title
+                        </h2>
+
+                        <div class="entry-meta">
+                            <ul>
+                                <li class="d-flex align-items-center"><i class="bi bi-person"></i>@Model.Author</li>
+                                <li class="d-flex align-items-center"><i class="bi bi-clock"></i> <time>@Model.Date</time></li>
+                            </ul>
+                        </div>
+
+                        <div class="entry-content">
+                            @Html.Raw(Model.Content)
+
+                        </div>
+
+                        <div class="entry-footer">
+
+
+
+
+                            @if (Model.ArticleTags != null)
+                            {
+                                <ul class="tags">
+                                    @foreach (var tag in Model.ArticleTags.Split('~'))
+                                    {
+                                        <i class="bi bi-tags"></i>
+                                        <li><a href="#">@tag</a></li>
+                                    }
+                                </ul>
+                            }
+
+
+                        </div>
+                        <hr />
+                        @if (Model.Articles.Count != 0)
+                        {
+                            <h3 class="sidebar-title">Также можете прочитать:</h3>
+                            <div class="sidebar-item recent-posts">
+
+
+                                @foreach (var article in Model.Articles)
+                                {
+                                    <div class="post-item clearfix">
+                                        <img src="@("~/img/blog/title/" + article.ImageName)" alt="">
+                                        <h4><a asp-controller="Article" asp-action="Details" asp-route-id="@article.Id">@article.Title</a></h4>
+                                        <time>@article.Date</time>
+                                    </div>
+                                }
+
+                            </div>
+                        }
+                    </article>
+
+                </div>
+              
+
+            </div>
+
+        </div>
+    </section>
+
+</main>

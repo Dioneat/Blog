@@ -1,0 +1,148 @@
+﻿@model Test.ViewModels.IndexViewModel
+
+<main id="main">
+
+    <section class="breadcrumbs">
+        <div class="container">
+
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>
+                    <a asp-controller="Home" asp-action="Index">Главная</a>
+                    / <a asp-controller="Home" asp-action="Blog">Блог</a>
+                </h2>
+            </div>
+
+        </div>
+    </section>
+    <section id="blog" class="blog">
+        <div class="container" data-aos="fade-up">
+
+            <div class="row">
+
+                <div class="col-lg-8 entries">
+
+
+                    @foreach (var article in Model.Articles)
+                    {
+                        <article class="entry">
+
+                            <div class="entry-img">
+                                <a asp-controller="Article" asp-action="Details" asp-route-id="@article.Id"><img src="@("~/img/blog/title/" + article.ImageName)" asp-append-version="true" alt="" class="img-fluid"></a>
+                            </div>
+
+                            <h2 class="entry-title">
+                                <a asp-controller="Article" asp-action="Details" asp-route-id="@article.Id">@article.Title</a>
+                            </h2>
+
+                            <div class="entry-meta">
+                                <ul>
+                                    <li class="d-flex align-items-center"><i class="bi bi-person"></i>@article.Author</li>
+                                    <li class="d-flex align-items-center"><i class="bi bi-clock"></i><time>@article.Date</time></li>
+                                </ul>
+                            </div>
+
+                            <div class="entry-content">
+                                <p>
+                                    @article.ShortDesc
+                                </p>
+                                <div class="read-more">
+                                    <form asp-controller="Article" asp-action="Delete" asp-route-id="@article.Id" method="post">
+                                        <a asp-controller="Article" asp-action="Details" asp-route-id="@article.Id">Читать дальше</a>
+                                        @if (User.Identity.IsAuthenticated)
+                                        {
+                                            <a class="btn btn-sm btn-primary" asp-controller="Article" asp-action="Edit" asp-route-id="@article.Id">Изменить</a>
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                Удалить
+                                            </button>
+                                        }
+
+
+                                    </form>
+                                </div>
+                            </div>
+
+                        </article>
+                    }
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <article class="entry">
+
+                            <a asp-controller="Article" asp-action="Create">Создать статью</a>
+
+                        </article>
+                    }
+
+
+
+
+                    <div class="blog-pagination">
+                        <ul class="justify-content-center">
+                            @if (Model.PageViewModel.HasPreviousPage)
+                            {
+                                <li>
+                                    <a asp-action="Blog"
+                                       asp-route-page="@(Model.PageViewModel.PageNumber - 1)"
+                                       class="btn btn-outline-dark">
+                                        <i class="glyphicon glyphicon-chevron-left"></i>
+                                        Назад
+                                    </a>
+                                </li>
+
+                            }
+                            @if (Model.PageViewModel.HasNextPage)
+                            {
+                                <li>
+                                    <a asp-action="Blog"
+                                       asp-route-page="@(Model.PageViewModel.PageNumber + 1)"
+                                       class="btn btn-outline-dark">
+                                        Вперед
+                                        <i class="glyphicon glyphicon-chevron-right"></i>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+
+                </div>
+
+                <div class="col-lg-4">
+
+                    <div class="sidebar">
+                        <h3 class="sidebar-title">Поиск</h3>
+                        <div class="sidebar-item search-form">
+                            <form method="get">
+                                <input type="text" placeholder="Введите название статьи" name="name" value="@Model.FilterViewModel.SelectedName">
+                                <button type="submit"><i class="bi bi-search"></i></button>
+
+                            </form>
+
+                        </div>
+
+
+
+
+                        <h3 class="sidebar-title">Тэги</h3>
+                        <form method="get">
+                            <div class="sidebar-item tags">
+                                <ul>
+                                    @{
+                                        foreach (var tag in Model.Tags)
+                                        {
+                                            <li><input type="submit" name="tag" value="@tag" /></li>
+                                        }
+                                    }
+                                </ul>
+                            </div>
+                        </form>
+                        <a class="btn btn-sm btn-danger" asp-controller="Home" asp-action="Blog">Сбросить</a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+</main>

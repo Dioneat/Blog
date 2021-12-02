@@ -1,0 +1,215 @@
+﻿@model Test.ViewModels.HomeViewModel
+
+@await Html.PartialAsync("HeroPartial")
+
+<main id="main">
+    <section class="team" data-aos="fade-up" data-aos-easing="ease-in-out" data-aos-duration="500">
+        <div class="container">
+
+            <div class="row">
+
+                <div class="col-lg-10 col-md-6 d-flex align-items-stretch">
+                    <div class="member">
+                        <div class="member-img">
+                            <img src="~/img/main.jpg" asp-append-version="true" class="img-fluid" alt="">
+                            <div class="social">
+                                <a href="https://vk.com/idlelenatimofeeva" target="_blank"><i class="bx bxl-vk"></i></a>
+                                <a href="https://www.instagram.com/lelena.timofeeva/" target="_blank"><i class="bi bi-instagram"></i></a>
+                            </div>
+                        </div>
+                        <div class="member-info">
+  
+                            <h2>Елена Тимофеева</h2>
+                            <span>Педагог</span>
+                            <p>
+                                Родилась и выросла в чудесном городе Нижнем Новгороде. После школы поступила в Нижегородский Педагогический Колледж им. К.Д. Ушинского на отделение "Дошкольное образование". Успешно окончила его в 2005 году со специальностью "Воспитатель". В 2009 году закончила экономический факультет МФЮА и поняла, что работа моя может быть связана только с детьми. В 2019 году закончила ГОУ ВО МО "Государственный социально-гуманитарный университет" Педагогический факультет по профилю "Дошкольное образование".
+                            </p>
+                            <p>
+                                Дополнительно прошла профессиональную переподготовку в ОАНО ВО "Московском психолого-социальном университете" по дополнительным профессиональным программам: "Логопедия" и "Специальное (дефектологическое) образование".
+                            </p>
+                        </div>
+                        <a asp-controller="Home" asp-action="About">Читать далее</a>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+    <section class="services">
+        <div class="container">
+            <div><h2>Качества, которые считаю важными в работе педагога</h2></div>
+            <br/>
+            <div class="row">
+                <div class="col-md-6 col-lg-3 d-flex align-items-stretch" data-aos="fade-up">
+                    <div class="icon-box icon-box-pink">
+                        <div class="icon"><i class="bx bxl-dribbble"></i></div>
+                        <h4 class="title">Любовь к детям и профессии</h4>
+                        <p class="description">Это самое важное качество.Труд педагога связан с множеством ситуаций, испытывающих его на «прочность». В конечном итоге в профессии остаются лишь по-настоящему увлечённые люди, искренне любящие детей и свою профессию, которая является для них призванием</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-3 d-flex align-items-stretch" data-aos="fade-up" data-aos-delay="100">
+                    <div class="icon-box icon-box-cyan">
+                        <div class="icon"><i class="bx bx-file"></i></div>
+                        <h4 class="title"> Доброжелательность</h4>
+                        <p class="description">Педагог должен уметь расположить к себе, вызвать доверие и создать такую рабочую обстановку, при которой ученикам захочется овладевать новыми знаниями и умениями, а родителям – открыто обсуждать важные вопросы, касающиеся их детей</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-3 d-flex align-items-stretch" data-aos="fade-up" data-aos-delay="200">
+                    <div class="icon-box icon-box-green">
+                        <div class="icon"><i class="bx bx-tachometer"></i></div>
+                        <h4 class="title">Стрессоустойчивость.</h4>
+                        <p class="description">Умение противостоять стрессу и справляться со сложными ситуациями, не теряя самообладания – большой плюс для педагога</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-3 d-flex align-items-stretch" data-aos="fade-up" data-aos-delay="200">
+                    <div class="icon-box icon-box-blue">
+                        <div class="icon"><i class="bx bx-world"></i></div>
+                        <h4 class="title">Коммуникабельность</h4>
+                        <p class="description">Общительность и умение выстраивать взаимоотношения на разных уровнях помогают педагогу не только находить общий язык с людьми, но и расти в профессиональном плане</p>
+                    </div>
+                </div>
+                 <div class="col-md-6 col-lg-3 d-flex align-items-stretch" data-aos="fade-up" data-aos-delay="200">
+                    <div class="icon-box icon-box-cyan">
+                        <div class="icon"><i class="bx bx-file"></i></div>
+                        <h4 class="title">Оптимизм</h4>
+                        <p class="description">Хороший преподаватель никогда не теряет оптимизма и веры в себя</p>
+                    </div>
+                </div>
+                 <div class="col-md-6 col-lg-3 d-flex align-items-stretch" data-aos="fade-up" data-aos-delay="200">
+                    <div class="icon-box icon-box-pink">
+                        <div class="icon"><i class="bx bx-world"></i></div>
+                        <h4 class="title">Обучаемость</h4>
+                        <p class="description">"Научись, научи, научи учить!"(с) Педагог, как никто другой, должен стремиться к новым знаниям. Эта профессия связана с необходимостью повышения квалификации и своего мастерства</p>
+                    </div>
+                </div>
+                 <div class="col-md-6 col-lg-3 d-flex align-items-stretch" data-aos="fade-up" data-aos-delay="200">
+                    <div class="icon-box icon-box-blue">
+                        <div class="icon"><i class="bx bx-world"></i></div>
+                        <h4 class="title">Юмор</h4>
+                        <p class="description">Иногда от вовремя сказанной шутки и улыбки зависит очень многое: и настроение детей, и их отношение к педагогу в целом</p>
+                    </div>
+                </div>
+                 <div class="col-md-6 col-lg-3 d-flex align-items-stretch" data-aos="fade-up" data-aos-delay="200">
+                    <div class="icon-box icon-box-green">
+                        <div class="icon"><i class="bx bx-world"></i></div>
+                        <h4 class="title">Творческий подход</h4>
+                        <p class="description">Умение преподнести даже сложную информацию живо и интересно, найти подход к каждому ребенку – необходимые качества личности педагога</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+    @if(Model.Articles.Count() != 0)
+    {
+         <hr />
+    <section id="blog" class="blog">
+        <div class="container" data-aos="fade-up">
+
+            <div class="row">
+                <div>
+                    <h2><a asp-controller="Home" asp-action="Blog">Мой Блог</a></h2>
+                </div>
+                <div class="col-lg-12 entries">
+
+
+                    @foreach (var article in Model.Articles)
+                    {
+                        <article class="entry">
+
+                            <div class="entry-img">
+                                <a asp-controller="Article" asp-action="Details" asp-route-id="@article.Id"><img src="@("~/img/blog/title/" + article.ImageName)" asp-append-version="true" alt="" class="img-fluid"></a>
+                            </div>
+
+                            <h2 class="entry-title">
+                                <a asp-controller="Article" asp-action="Details" asp-route-id="@article.Id">@article.Title</a>
+                            </h2>
+
+                            <div class="entry-meta">
+                                <ul>
+                                    <li class="d-flex align-items-center"><i class="bi bi-person"></i>@article.Author</li>
+                                    <li class="d-flex align-items-center"><i class="bi bi-clock"></i><time>@article.Date</time></li>
+                                </ul>
+                            </div>
+
+                            <div class="entry-content">
+                                <p>
+                                    @article.ShortDesc
+                                </p>
+                                <div class="read-more">
+                                    <form asp-controller="Article" asp-action="Delete" asp-route-id="@article.Id" method="post">
+                                        <a asp-controller="Article" asp-action="Details" asp-route-id="@article.Id">Читать дальше</a>
+                                        @if (User.Identity.IsAuthenticated)
+                                        {
+                                            <a class="btn btn-sm btn-primary" asp-controller="Article" asp-action="Edit" asp-route-id="@article.Id">Изменить</a>
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                Удалить
+                                            </button>
+                                        }
+
+
+                                    </form>
+                                </div>
+                            </div>
+
+                        </article>
+                    }
+                </div>
+                <a class="btn btn-sm btn-primary" asp-controller="Home" asp-action="Blog">Узнать больше</a>
+            </div>
+
+        </div>
+    </section>
+    }
+   
+    <hr />
+    <section id="blog" class="blog">
+        <div class="container" data-aos="fade-up">
+
+            <div class="row">
+                <div class="col-lg-12 entries">
+
+
+                    @foreach (var index in Model.IndexSection.ToList())
+                    {
+                        <article class="entry">
+                            <div class="entry-content">
+                                <p>
+                                    @Html.Raw(index.Content)
+                                </p>
+                                <div class="read-more">
+                                    <form asp-controller="Home" asp-action="DeleteSection" asp-route-id="@index.Id" method="post">
+                                        @if (User.Identity.IsAuthenticated)
+                                        {
+                                            <a class="btn btn-sm btn-primary" asp-controller="Home" asp-action="EditSection" asp-route-id="@index.Id">Изменить</a>
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                Удалить
+                                            </button>
+                                        }
+                                    </form>
+                                </div>
+                            </div>
+
+                        </article>
+                    }
+                </div>
+            </div>
+
+        </div>
+    </section>
+    @if (User.Identity.IsAuthenticated)
+    {
+        <div class="container">
+
+            <a class="btn btn-sm btn-primary" asp-controller="Home" asp-action="CreateSection">Создать</a>
+
+        </div>
+    }
+
+
+</main>

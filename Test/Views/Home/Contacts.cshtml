@@ -1,0 +1,82 @@
+﻿<main id="main">
+    <section class="breadcrumbs">
+        <div class="container">
+
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>
+                    <a asp-controller="Home" asp-action="Index">Главная</a> / <span>Контакты</span>
+
+                </h2>
+
+            </div>
+
+        </div>
+    </section>
+
+    <section class="contact" data-aos="fade-up" data-aos-easing="ease-in-out" data-aos-duration="500">
+        <div class="container">
+
+            <div class="row">
+
+                <div class="col-lg-6">
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="info-box">
+                                <i class="bx bx-map"></i>
+                                <h3>Наш адрес</h3>
+                                <p>140512, Московская область, г.о. Луховицы, пос.совхоза  "Астапово", Юбилейная, 11</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-box">
+                                <i class="bx bx-envelope"></i>
+                                <h3>Моя почта</h3>
+                                <p>elenatimofeeva10@yandex.ru</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-box">
+                                <i class="bx bx-phone-call"></i>
+                                <h3>Мой телефон</h3>
+                                <p>+7 985-310-27-53</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="col-lg-6">
+                    <form asp-controller="Home" asp-action="SendEmail" method="post" role="form" class="php-email-form">
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <input type="text" name="name" class="form-control" placeholder="Ваше имя" required>
+                            </div>
+                            <div class="col-md-6 form-group mt-3 mt-md-0">
+                                <input type="email" class="form-control" name="email" id="email" placeholder="Ваша почта" required>
+                            </div>
+                        </div>
+                        <div class="form-group mt-3">
+                            <input type="text" class="form-control" name="subject" id="subject" placeholder="Тема" required>
+                        </div>
+                        <div class="form-group mt-3">
+                            <textarea class="form-control" name="content" rows="5" placeholder="Введите сообщение" required></textarea>
+                        </div>
+
+                        <div class="text-center"><button type="submit" asp-action="SendEmail" asp-controller="Home">Отправить</button></div>
+                    </form>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+    <section class="map mt-2">
+        <div class="container-fluid p-0">
+            <iframe src="https://yandex.ru/map-widget/v1/?um=constructor%3A72a627d5b992523bbc24e36ea0150fa99ae7fb7f9483499e7ea83bf55a6f1470&amp;source=constructor" width="100%" height="400" frameborder="0"></iframe>
+            
+        </div>
+
+    </section>
+   
+</main>
