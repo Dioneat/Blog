@@ -53,13 +53,16 @@ namespace Test.Controllers
         {
           
             var avm = new ArticleViewModel();
-            var tags = db.Articles;
+
+            var tags = db.Articles.Select(p => p.Tags).ToList();
+            tags.AddRange(db.Posts.Select(p => p.Tags));
             var tag = new List<string>();
             foreach (var item in tags)
             {
-                if(item.Tags != null)
-                    tag.AddRange(item.Tags.Split('~'));
+                if(item != null)
+                    tag.AddRange(item.Split('~'));
             }
+            avm.ArticleTags = string.Join("~", tags);
             avm.Tags = tag;
             return View(avm);
         }
@@ -115,12 +118,15 @@ namespace Test.Controllers
             if (id != null)
             {
                 var articles = db.Articles;
+
                 var tag = new List<string>();
                 foreach (var item in articles)
                 {
                     if(item.Tags != null)
                         tag.AddRange(item.Tags.Split('~'));
                 }
+                tag.AddRange(db.Posts.Select(p => p.Tags));
+
                 var article = articles.FirstOrDefault(p => p.Id == id);
                 var avm = new ArticleViewModel()
                 {

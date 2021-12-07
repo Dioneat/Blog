@@ -2,23 +2,23 @@
     <div class="container d-flex justify-content-between align-items-center">
 
         <div class="logo">
-            <h1 class="text-light"><a asp-controller="Home" asp-action="Index"><span class="red-color">Я</span><span>ПЕДАГОГ</span></a></h1>
-
+            <h1 class="text-light"><a asp-controller="Home" asp-action="Index"><span class="red-color">Е</span><span>ЛЕНА </span><span class="red-color">Т</span><span>ИМОФЕЕВА</span></a></h1>
         </div>
 
         <nav id="navbar" class="navbar">
             <ul>
-                <li><a asp-controller="Home" asp-action="Index">Главная</a></li>
-                <li><a asp-controller="Home" asp-action="About">О себе</a></li>
-                <li><a asp-controller="Home" asp-action="Blog">Блог</a></li>
-                <li><a asp-controller="Home" asp-action="Contacts">Контакты</a></li>
+                                <li><a asp-controller="Home" asp-action="Index">Главная<i class="bi bi-house"></i></a></li>
+                <li><a asp-controller="Home" asp-action="About">О себе<i class="bi bi-person"></i></a></li>
+                <li><a asp-controller="Home" asp-action="Blog">Блог<i class="bi bi-newspaper"></i></a></li>
+                <li><a asp-controller="Home" asp-action="Contacts">Контакты<i class="bi bi-phone"></i></a></li>
+          
                 <li class="dropdown">
                     <a href="#"><span>Дополнительная информация</span> <i class="bi bi-chevron-down"></i></a>
                     <ul>
                         <li><a asp-controller="AdditionalInformation" asp-action="ForParents">Для родителей</a></li>
-                    </ul>
-                </li>
-                @if (User.Identity.IsAuthenticated)
+                                        <li><hr /></li>
+
+                                        @if (User.Identity.IsAuthenticated)
                 {
                     <li class="dropdown">
                         @{ 
@@ -48,7 +48,12 @@
                 {
                     <li><a asp-controller="Account" asp-action="Login">Войти</a></li>
                 }
+                    </ul>
+                </li>
+
+                  <li><a asp-controller="Home" asp-action="Search">Поиск по сайту<i class="bi bi-search"></i></a></li>
             </ul>
+
             <i class="bi bi-list mobile-nav-toggle"></i>
         </nav>
 

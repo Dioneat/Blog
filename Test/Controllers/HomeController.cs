@@ -190,6 +190,7 @@ namespace Test.Controllers
             if (!String.IsNullOrEmpty(tag))
             {
                 source = source.Where(p => p.Tags.Contains(tag));
+
             }
             
 
@@ -218,7 +219,70 @@ namespace Test.Controllers
             return RedirectToAction("Contacts", "Home");
         }
 
+        public IActionResult Search(string tag, string name, int page = 1)
+        {
+            bool isSearch = false;
 
+            IQueryable<Article> articles = db.Articles;
+            IQueryable<Post> posts = db.Posts;
+
+            var hs = new HashSet<string>();
+
+            foreach (var article in articles)
+            {
+                if (article.Tags != null)
+                {
+                    foreach (var t in article.Tags.Split('~'))
+                    {
+                        hs.Add(t);
+                    }
+                }
+
+            }
+            foreach (var post in posts)
+            {
+                if (post.Tags != null)
+                {
+                    foreach (var t in post.Tags.Split('~'))
+                    {
+                        hs.Add(t);
+                    }
+                }
+
+            }
+            if (!String.IsNullOrEmpty(name))
+            {
+                name = name.ToLower();
+                articles = articles.Where(p => p.Title.ToLower().Contains(name) || p.Content.ToLower().Contains(name) || p.ShortDesc.ToLower().Contains(name));
+                posts = posts.Where(p => p.Title.ToLower().Contains(name) || p.Content.ToLower().Contains(name) || p.ShortDesc.ToLower().Contains(name));
+            }
+            if (!String.IsNullOrEmpty(tag))
+            {
+                articles = articles.Where(p => p.Tags.Contains(tag));
+                posts = posts.Where(p => p.Tags.Contains(tag));
+            }
+
+
+            if (name != null || tag != null)
+            {
+                isSearch = true;
+            }
+            else
+            {
+                isSearch = false;
+            }
+
+            SearchViewModel viewModel = new SearchViewModel
+            {
+                FilterViewModel = new FilterViewModel(hs, tag, name),
+                Articles = articles,
+                Posts = posts,
+                Tags = hs,
+                isSearch = isSearch
+
+            };
+            return View(viewModel);
+        }
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

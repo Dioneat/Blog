@@ -13,7 +13,7 @@ namespace Test.Models
         {//elenatimofeeva10@yandex.ru
             MimeMessage message = new MimeMessage();
             message.From.Add(new MailboxAddress(name, email));
-            message.To.Add(new MailboxAddress("elenatimofeeva10@yandex.ru"));
+            message.To.Add(new MailboxAddress("hitbat@inbox.ru"));
             message.Subject = subject;
             var html = $"<div>Пришло новое сообщение!<div>От: {name}</div><div>Почта отправителя: <a href='mailto:{email}'>{email}</a></div><div>Сообщение: {content}</div></div>";
             message.Body = new BodyBuilder() { HtmlBody = html }.ToMessageBody();

@@ -55,11 +55,15 @@
 
                             <div id="tags" class="form-group blog-settings">
                                 <label asp-for="EditTags" class="control-label">Тэги:</label>
-                                @foreach (var tag in Model.Tags.ToHashSet())
+                                @if(Model.ArticleTags != null)
+                                {
+                                     @foreach (var tag in Model.ArticleTags.Split("~").ToHashSet())
                                 {
                                     <input type="text" list="browsers" class="tag-settings" asp-for="EditTags" value="@tag" />
 
                                 }
+                                }
+                               
                                 <input type="button" class="btn btn-success addTags" onclick="addTag()" value="Добавить">
                                 <input type="button" class="btn btn-danger removeTags" onclick="removeTag()" value="Удалить">
                                 @if (Model.Tags != null)

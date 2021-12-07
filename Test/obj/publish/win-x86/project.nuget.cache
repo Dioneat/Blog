@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "K47iq6r2IT4xbpvHCVf7JgZ7iE4+t3tZXgN1l+m/+yeNQw5s+XB4zIl0JAWoNE8I/W34HXQWTV3QrLyFbVQ6OA==",
+  "dgSpecHash": "mDfHf+vmPCeP3EBPrIjzjwWIOBz8zvHyeIJpd/PCn2Lsvn+Oou1Znh69N3bEoGn3iUwTMLlKRYF3l7giWgH8kg==",
   "success": true,
-  "projectFilePath": "D:\\Downloads\\archive\\Blog\\Test\\Test.csproj",
+  "projectFilePath": "D:\\Downloads\\archive\\Blog\\Blog\\Test\\Test.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Dioneat\\.nuget\\packages\\mailkit\\2.15.0\\mailkit.2.15.0.nupkg.sha512",
     "C:\\Users\\Dioneat\\.nuget\\packages\\microsoft.aspnetcore.cryptography.internal\\3.1.18\\microsoft.aspnetcore.cryptography.internal.3.1.18.nupkg.sha512",

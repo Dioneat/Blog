@@ -12,6 +12,9 @@ namespace Test.Models
         public string Image { get; set; }
         [NotMapped]
         public IFormFile File { get; set; }
+        [NotMapped]
+        public string[] EditTags { get; set; }
+        public string Tags { get; set; }
 
 
     }

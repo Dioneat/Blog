@@ -1,4 +1,4 @@
-﻿@model Test.Models.Post
+﻿@model Test.ViewModels.PostViewModel
 <main id="main">
 
     <section class="breadcrumbs">
@@ -43,6 +43,20 @@
                             <div class="form-group blog-settings">
                                 <label asp-for="Content" class="control-label">Содержание</label>
                                 <textarea class="editor" asp-for="Content"></textarea>
+                            </div>
+                              <div id="tags" class="form-group blog-settings">
+                                <label asp-for="EditTags" class="control-label">Тэги:</label>
+                                <input type="button" class="btn btn-success addTags" onclick="addTag()" value="Добавить">
+                                <input type="button" class="btn btn-danger removeTags" onclick="removeTag()" value="Удалить">
+                                @if (Model.Tags != null)
+                                {
+                                    <datalist id="browsers">
+                                        @foreach (var tag in Model.Tags.ToHashSet())
+                                        {
+                                            <option value="@tag" />
+                                        }
+                                    </datalist>
+                                }
                             </div>
                             <div class="form-group blog-settings">
                                 <button type="submit" class="btn btn-success">Создать</button>

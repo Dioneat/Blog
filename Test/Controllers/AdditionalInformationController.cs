@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Test.Data;
 using Test.Models;
+using Test.ViewModels;
 
 namespace Test.Controllers
 {
@@ -39,28 +40,48 @@ namespace Test.Controllers
         }
 
         [Authorize(Roles = "admin, superadmin")]
-        public ActionResult Create()
+        public ActionResult Create() 
         {
-            return View();
+            var post = new PostViewModel();
+            var postTags = db.Articles.Select(p => p.Tags).ToList();
+            var tags = postTags;
+            tags.AddRange(db.Posts.Select(p => p.Tags));
+            var tag = new List<string>();
+            foreach (var item in tags)
+            {
+                if (item != null)
+                    tag.AddRange(item.Split('~'));
+            }
+            post.PostTags = String.Join("~", postTags);
+            post.Tags = tag;
+            return View(post);
         }
 
         [HttpPost]
-        public async Task<ActionResult> Create(Post post) // ArticleVM
+        public async Task<ActionResult> Create(PostViewModel pvm) // 
         {
             if (ModelState.IsValid)
             {
-                if (post.File != null)
+                if (pvm.File != null)
                 {
                     string wwwRootPath = webHost.WebRootPath;
-                    string fileName = Path.GetFileNameWithoutExtension(post.File.FileName);
-                    string extension = Path.GetExtension(post.File.FileName);
-                    post.Image = fileName = fileName + DateTime.Now.ToString("yymmssfff") + extension;
+                    string fileName = Path.GetFileNameWithoutExtension(pvm.File.FileName);
+                    string extension = Path.GetExtension(pvm.File.FileName);
+                    pvm.ImageName = fileName = fileName + DateTime.Now.ToString("yymmssfff") + extension;
                     string path = Path.Combine(wwwRootPath + "/img/forparents/title/", fileName);
                     using (var fs = new FileStream(path, FileMode.Create))
                     {
-                        await post.File.CopyToAsync(fs);
+                        await pvm.File.CopyToAsync(fs);
                     }
                 }
+                var post = new Post
+                {
+                    Title = pvm.Title,
+                    Content = pvm.Content,
+                    ShortDesc = pvm.ShortDesc,
+                    Tags = string.Join("~", pvm.EditTags),
+                    Image = pvm.ImageName
+                };
                 db.Posts.Add(post);
                 await db.SaveChangesAsync();
                 return RedirectToAction("ForParents", "AdditionalInformation");
@@ -76,29 +97,58 @@ namespace Test.Controllers
             {
                 var post = await db.Posts.FirstOrDefaultAsync(p => p.Id == id);
                 if (post != null)
-                    return View(post);
+                {
+                    var pvm = new PostViewModel()
+                    {
+                        Title = post.Title,
+                        Content = post.Content,
+                        ImageName = post.Image,
+                        ShortDesc = post.ShortDesc,
+                        PostTags = post.Tags,
+                        
+                    };
+                    var tags = new List<string>();
+                    tags.AddRange(db.Posts.Select(p => p.Tags));
+                    tags.AddRange(db.Articles.Select(p => p.Tags));
+                    var tag = new List<string>();
+                    foreach (var item in tags)
+                    {
+                        if (item != null)
+                            tag.AddRange(item.Split('~'));
+                    }
+                    pvm.Tags = tag;
+                    return View(pvm);
+                }
             }
             return NotFound();
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit(Post post)
+        public async Task<ActionResult> Edit(PostViewModel pvm)
         {
             if (ModelState.IsValid)
             {
-                    if (post.File != null)
+                    if (pvm.File != null)
                 {
                     string wwwRootPath = webHost.WebRootPath;
-                    string fileName = Path.GetFileNameWithoutExtension(post.File.FileName);
-                    string extension = Path.GetExtension(post.File.FileName);
-                    post.Image = fileName = fileName + DateTime.Now.ToString("yymmssfff") + extension;
+                    string fileName = Path.GetFileNameWithoutExtension(pvm.File.FileName);
+                    string extension = Path.GetExtension(pvm.File.FileName);
+                    pvm.ImageName = fileName = fileName + DateTime.Now.ToString("yymmssfff") + extension;
                     string path = Path.Combine(wwwRootPath + "/img/forparents/title/", fileName);
                     using (var fs = new FileStream(path, FileMode.Create))
                     {
-                        await post.File.CopyToAsync(fs);
+                        await pvm.File.CopyToAsync(fs);
                     }
                 }
-                
+                var post = new Post
+                {
+                    Id = pvm.Id,
+                    Title = pvm.Title,
+                    Content = pvm.Content,
+                    ShortDesc = pvm.ShortDesc,
+                    Tags = string.Join("~", pvm.EditTags),
+                    Image = pvm.ImageName
+                };
                 db.Posts.Update(post);
 
                 await db.SaveChangesAsync();

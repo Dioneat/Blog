@@ -17,7 +17,7 @@
                     <div class="col-md-6 d-flex align-items-stretch" data-aos="fade-up">
                         <div class="card">
                             <div class="card-img">
-                                <a asp-controller="AdditionalInformation" asp-action="Post" asp-route-id="@post.Id"><img src="@("/img/forparents/title/" + post.Image)" alt="..."></a>
+                                <a asp-controller="AdditionalInformation" asp-action="Post" asp-route-id="@post.Id"><img src="@("/img/forparents/title/" + post.Image)" width="1296px" alt="..."></a>
                             </div>
                             <div class="card-body">
                                 <h5 class="card-title"><a asp-controller="AdditionalInformation" asp-action="Post" asp-route-id="@post.Id">@post.Title</a></h5>
@@ -33,7 +33,7 @@
 
                                     </form>
                                 }
-
+                              
                                 <div class="read-more"><a asp-controller="AdditionalInformation" asp-action="Post" asp-route-id="@post.Id"><i class="bi bi-arrow-right"></i>Читать далее</a></div>
                             </div>
                         </div>

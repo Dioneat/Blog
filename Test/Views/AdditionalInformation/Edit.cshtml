@@ -1,4 +1,4 @@
-﻿@model Test.Models.Post
+﻿@model Test.ViewModels.PostViewModel
 <main id="main">
 
     <section class="breadcrumbs">
@@ -31,10 +31,10 @@
                                 <input type="text" asp-for="Title" class="form-control" />
                             </div>
                             <div class="form-group blog-settings img-settings">
-                                @if (!string.IsNullOrEmpty(Model.Image))
+                                @if (!string.IsNullOrEmpty(Model.ImageName))
                                 {<div class="entry-img">
-                                        <img src="@("~/img/forparents/title/" + Model.Image)" asp-append-version="true" alt="" class="img-fluid" />
-                                        <input asp-for="Image" hidden />
+                                        <img src="@("~/img/forparents/title/" + Model.ImageName)" asp-append-version="true" alt="" class="img-fluid" />
+                                        <input asp-for="ImageName" hidden />
                                     </div>
                                 }
                             </div>
@@ -53,6 +53,29 @@
                             <div class="form-group blog-settings">
                                 <label asp-for="Content" class="control-label">Содержание</label>
                                 <textarea class="editor" asp-for="Content"></textarea>
+                            </div>
+                              <div id="tags" class="form-group blog-settings">
+                                <label asp-for="EditTags" class="control-label">Тэги:</label>
+                                @if(Model.PostTags != null)
+                                {
+                                     @foreach (var tag in Model.PostTags.Split("~").ToHashSet())
+                                {
+                                    <input type="text" list="browsers" class="tag-settings" asp-for="EditTags" value="@tag" />
+
+                                }
+                                }
+                               
+                                <input type="button" class="btn btn-success addTags" onclick="addTag()" value="Добавить">
+                                <input type="button" class="btn btn-danger removeTags" onclick="removeTag()" value="Удалить">
+                                @if (Model.Tags != null)
+                                {
+                                    <datalist id="browsers">
+                                        @foreach (var tag in Model.Tags.ToHashSet())
+                                        {
+                                            <option value="@tag" />
+                                        }
+                                    </datalist>
+                                }
                             </div>
                             <div class="form-group blog-settings">
                                 <button type="submit" class="btn btn-success">Изменить</button>

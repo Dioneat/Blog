@@ -1,0 +1,163 @@
+﻿@model Test.ViewModels.SearchViewModel
+<main id="main">
+
+    <section class="breadcrumbs">
+        <div class="container">
+
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>
+                    <a asp-controller="Home" asp-action="Index">Главная</a>
+                    / <a asp-controller="Home" asp-action="Search">Поиск по сайту</a>
+                </h2>
+            </div>
+
+        </div>
+    </section>
+   <section id="blog" class="blog">
+        <div class="container" data-aos="fade-up">
+
+            <div class="row">
+
+                <div class="col-lg-15 entries">
+                    <div class="col-lg-12">
+
+                    <div class="sidebar">
+                        <h3 class="sidebar-title">Поиск</h3>
+                        <div class="sidebar-item search-form">
+                            <form method="get">
+                                <input type="text" placeholder="Что вы хотели найти?" name="name" value="@Model.FilterViewModel.SelectedName">
+                                <button type="submit"><i class="bi bi-search"></i></button>
+
+                            </form>
+
+                        </div>
+
+                        <h3 class="sidebar-title">Тэги</h3>
+                        <form method="get">
+                            <div class="sidebar-item tags">
+                                <ul>
+                                    @{
+                                        foreach (var tag in Model.Tags)
+                                        {
+                                            <li><input type="submit" name="tag" value="@tag" /></li>
+                                        }
+                                    }
+                                </ul>
+                            </div>
+                        </form>
+                        <a class="btn btn-sm btn-danger" asp-controller="Home" asp-action="Search">Сбросить</a>
+
+                    </div>
+
+                </div>
+                   
+                @if(Model.isSearch == true)
+                    {
+                         @if(Model.Articles.Count() != 0)
+                    {
+                        <h2>Поиск во вкладке "Блог"</h2>
+
+                    @foreach (var article in Model.Articles)
+                    {
+                        <article class="entry">
+
+                            <div class="entry-img">
+                                <a asp-controller="Article" asp-action="Details" asp-route-id="@article.Id"><img src="@("~/img/blog/title/" + article.ImageName)" asp-append-version="true" alt="" width="1296px" class="img-fluid"></a>
+                            </div>
+
+                            <h2  class="entry-title">
+                                <a asp-controller="Article" asp-action="Details" asp-route-id="@article.Id">@article.Title</a>
+                            </h2>
+
+                            <div class="entry-meta">
+                                <ul>
+                                    <li class="d-flex align-items-center"><i class="bi bi-person"></i>@article.Author</li>
+                                    <li class="d-flex align-items-center"><i class="bi bi-clock"></i><time>@article.Date</time></li>
+                                </ul>
+                            </div>
+
+                            <div class="entry-content">
+                                <p>
+                                    @article.ShortDesc
+                                </p>
+                                <div class="read-more">
+                                    <form asp-controller="Article" asp-action="Delete" asp-route-id="@article.Id" method="post">
+                                        <a asp-controller="Article" asp-action="Details" asp-route-id="@article.Id">Читать дальше</a>
+                                        @if (User.Identity.IsAuthenticated)
+                                        {
+                                            <a class="btn btn-sm btn-primary" asp-controller="Article" asp-action="Edit" asp-route-id="@article.Id">Изменить</a>
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                Удалить
+                                            </button>
+                                        }
+
+
+                                    </form>
+                                </div>
+                            </div>
+
+                        </article>
+                    }
+                    }
+                    
+
+
+                    @if(Model.Posts.Count() != 0)
+                    {
+                        <h2>Поиск во вкладке "Для родителей"</h2>
+                    @foreach (var post in Model.Posts)
+                    {
+                        <article class="entry">
+
+                            <div class="entry-img">
+                                <a asp-controller="AdditionalInformation" asp-action="Post" asp-route-id="@post.Id"><img src="@("~/img/forparents/title/" + post.Image)" asp-append-version="true" alt="" width="1296px" class="img-fluid"></a>
+                            </div>
+
+                            <h2  class="entry-title">
+                                <a asp-controller="AdditionalInformation" asp-action="Post" asp-route-id="@post.Id">@post.Title</a>
+                            </h2>
+
+                            <div class="entry-meta">
+                                <ul>
+                                    <li class="d-flex align-items-center"><i class="bi bi-clock"></i><time>@post.Date</time></li>
+                                </ul>
+                            </div>
+
+                            <div class="entry-content">
+                                <p>
+                                    @post.ShortDesc
+                                </p>
+                                <div class="read-more">
+                                    <form asp-controller="AdditionalInformation" asp-action="Delete" asp-route-id="@post.Id" method="post">
+                                        <a asp-controller="AdditionalInformation" asp-action="Post" asp-route-id="@post.Id">Читать дальше</a>
+                                        @if (User.Identity.IsAuthenticated)
+                                        {
+                                            <a class="btn btn-sm btn-primary" asp-controller="AdditionalInformation" asp-action="Edit" asp-route-id="@post.Id">Изменить</a>
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                Удалить
+                                            </button>
+                                        }
+
+
+                                    </form>
+                                </div>
+                            </div>
+
+                        </article>
+                    }
+                        }
+                    }
+                    @if(Model.isSearch==false)
+                    {
+                        <div><h2>Тут пока пусто...</h2></div>
+                    }
+
+
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+</main>

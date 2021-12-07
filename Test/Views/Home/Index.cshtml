@@ -123,7 +123,7 @@
                         <article class="entry">
 
                             <div class="entry-img">
-                                <a asp-controller="Article" asp-action="Details" asp-route-id="@article.Id"><img src="@("~/img/blog/title/" + article.ImageName)" asp-append-version="true" alt="" class="img-fluid"></a>
+                                <a asp-controller="Article" asp-action="Details" asp-route-id="@article.Id"><img src="@("~/img/blog/title/" + article.ImageName)" width="1296px" asp-append-version="true" alt="" class="img-fluid"></a>
                             </div>
 
                             <h2 class="entry-title">
@@ -206,7 +206,7 @@
     {
         <div class="container">
 
-            <a class="btn btn-sm btn-primary" asp-controller="Home" asp-action="CreateSection">Создать</a>
+            <a class="btn btn-sm btn-primary editButton" asp-controller="Home" asp-action="CreateSection">Создать секцию</a>
 
         </div>
     }

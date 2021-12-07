@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Downloads\\archive\\Blog\\Test\\Test.csproj": {}
+    "D:\\Downloads\\archive\\Blog\\Blog\\Test\\Test.csproj": {}
   },
   "projects": {
-    "D:\\Downloads\\archive\\Blog\\Test\\Test.csproj": {
+    "D:\\Downloads\\archive\\Blog\\Blog\\Test\\Test.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Downloads\\archive\\Blog\\Test\\Test.csproj",
+        "projectUniqueName": "D:\\Downloads\\archive\\Blog\\Blog\\Test\\Test.csproj",
         "projectName": "Test",
-        "projectPath": "D:\\Downloads\\archive\\Blog\\Test\\Test.csproj",
+        "projectPath": "D:\\Downloads\\archive\\Blog\\Blog\\Test\\Test.csproj",
         "packagesPath": "C:\\Users\\Dioneat\\.nuget\\packages\\",
-        "outputPath": "D:\\Downloads\\archive\\Blog\\Test\\obj\\publish\\win-x86\\",
+        "outputPath": "D:\\Downloads\\archive\\Blog\\Blog\\Test\\obj\\publish\\win-x86\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Dioneat\\AppData\\Roaming\\NuGet\\NuGet.Config",

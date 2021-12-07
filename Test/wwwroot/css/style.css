@@ -1,6 +1,64 @@
 .red-color {
     color:red;
 }
+#cite {
+    background-image: url(../images/testimonial-bg.jpg);
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+    background-repeat: no-repeat;
+    position: relative;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    height: 550px;
+}
+input {
+    outline: 0;
+}
+.list-cite {
+    display: block;
+    width: 100%;
+}
+
+    .list-cite .content-cite {
+        text-align: center;
+        color: #ffffff;
+    }
+
+        .list-cite .content-cite .testi {
+            font-size: 16px;
+            line-height: 46px;
+            letter-spacing: 2px;
+        }
+
+        .list-cite .content-cite .people {
+            font-size: 14px;
+            margin-top: 30px;
+            letter-spacing: 2px;
+            color: #B7B7B7;
+            font-weight: 700;
+        }
+
+.mask-cite {
+    background-color: rgba(47, 47, 47, 0.7);
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+}
+
+.wrap-cite {
+    z-index: 1;
+    position: relative;
+}
+
+.editButton {
+    margin: 5px 0 32px 0;
+}
+          
 .div-container-about {
     margin-left: 115px;
 }
@@ -1605,7 +1663,6 @@ section {
 }
 
 .blog .entry .entry-img {
-  max-height: 440px;
   margin: -30px -30px 20px -30px;
   overflow: hidden;
 }
@@ -1949,7 +2006,7 @@ section {
 
 .blog .sidebar {
   padding: 30px;
-  margin: 0 0 60px 20px;
+  margin: 0 0 60px 0;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
@@ -2075,7 +2132,7 @@ section {
 }
 
 .blog .sidebar .tags ul a {
-  color: #1b54f5
+  color: #1b54f5;
   font-size: 14px;
   padding: 6px 14px;
   margin: 0 6px 8px 0;
@@ -2098,7 +2155,6 @@ section {
 
 #footer {
   background: #0b212d;
-  padding: 0 0 30px 0;
   color: #fff;
   font-size: 14px;
 }
