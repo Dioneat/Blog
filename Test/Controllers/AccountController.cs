@@ -20,6 +20,7 @@ namespace Test.Controllers
             _userManager = userManager;
             _signInManager = signInManager;
         }
+        [Authorize(Roles = "admin, superadmin")]
         public IActionResult Index()
         {
             return View();

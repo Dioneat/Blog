@@ -53,8 +53,7 @@
                                 <ul class="tags">
                                     @foreach (var tag in Model.ArticleTags.Split('~'))
                                     {
-                                        <i class="bi bi-tags"></i>
-                                        <li><a href="#">@tag</a></li>
+                                        <li><i class="bi bi-tags"></i><a>@tag</a></li>
                                     }
                                 </ul>
                             }
@@ -71,7 +70,6 @@
                                 @foreach (var article in Model.Articles)
                                 {
                                     <div class="post-item clearfix">
-                                        <img src="@("~/img/blog/title/" + article.ImageName)" alt="">
                                         <h4><a asp-controller="Article" asp-action="Details" asp-route-id="@article.Id">@article.Title</a></h4>
                                         <time>@article.Date</time>
                                     </div>

@@ -1,13 +1,13 @@
 D:\Downloads\archive\Blog\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\Test.exe
 D:\Downloads\archive\Blog\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\wwwroot\css\style.css
 D:\Downloads\archive\Blog\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\wwwroot\css\stylesAdminPanel.css
-D:\Downloads\archive\Blog\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\wwwroot\favicon.ico
 D:\Downloads\archive\Blog\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\wwwroot\img\about\portfolio\Screenshot_45210101560.png
 D:\Downloads\archive\Blog\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\wwwroot\img\blog\title\photo_2021-11-27_20-13-54210425869.jpg
 D:\Downloads\archive\Blog\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\wwwroot\img\blog\title\portfolio-8212554567.jpg
 D:\Downloads\archive\Blog\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\wwwroot\img\blog\title\Screenshot_2210721441.png
 D:\Downloads\archive\Blog\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\wwwroot\img\blog\title\Screenshot_5211039972.png
 D:\Downloads\archive\Blog\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\wwwroot\img\blog\title\Screenshot_5211054222.png
+D:\Downloads\archive\Blog\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\wwwroot\img\favicon.ico
 D:\Downloads\archive\Blog\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\wwwroot\img\forparents\title\photo_2021-11-27_20-13-53215314786.jpg
 D:\Downloads\archive\Blog\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\wwwroot\img\forparents\title\photo_2021-11-27_20-13-55210524528.jpg
 D:\Downloads\archive\Blog\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\wwwroot\img\forparents\title\photo_2021-11-27_20-13-55210927912.jpg
