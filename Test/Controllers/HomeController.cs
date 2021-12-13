@@ -219,7 +219,7 @@ namespace Test.Controllers
             return RedirectToAction("Contacts", "Home");
         }
 
-        public IActionResult Search(string tag, string name, int page = 1)
+        public IActionResult Search(string tag, string name, string categories, int page = 1)
         {
             bool isSearch = false;
 
@@ -250,19 +250,22 @@ namespace Test.Controllers
                 }
 
             }
-            if (!String.IsNullOrEmpty(name))
+            if(categories == null)
             {
-                name = name.ToLower();
-                articles = articles.Where(p => p.Title.ToLower().Contains(name) || p.Content.ToLower().Contains(name) || p.ShortDesc.ToLower().Contains(name));
-                posts = posts.Where(p => p.Title.ToLower().Contains(name) || p.Content.ToLower().Contains(name) || p.ShortDesc.ToLower().Contains(name));
-            }
-            if (!String.IsNullOrEmpty(tag))
-            {
-                articles = articles.Where(p => p.Tags.Contains(tag));
-                posts = posts.Where(p => p.Tags.Contains(tag));
-            }
+                if (!String.IsNullOrEmpty(name))
+                {
+                    name = name.ToLower();
+                    articles = articles.Where(p => p.Title.ToLower().Contains(name) || p.Content.ToLower().Contains(name) || p.ShortDesc.ToLower().Contains(name));
+                    posts = posts.Where(p => p.Title.ToLower().Contains(name) || p.Content.ToLower().Contains(name) || p.ShortDesc.ToLower().Contains(name));
+                }
+                if (!String.IsNullOrEmpty(tag))
+                {
+                    articles = articles.Where(p => p.Tags.Contains(tag));
+                    posts = posts.Where(p => p.Tags.Contains(tag));
+                }
 
-
+            }
+           
             if (name != null || tag != null)
             {
                 isSearch = true;
@@ -278,6 +281,7 @@ namespace Test.Controllers
                 Articles = articles,
                 Posts = posts,
                 Tags = hs,
+                Categories = categories,
                 isSearch = isSearch
 
             };

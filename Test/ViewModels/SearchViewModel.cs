@@ -9,6 +9,7 @@ namespace Test.ViewModels
         public IEnumerable<Post> Posts { get; set; }
         public FilterViewModel FilterViewModel { get; set; }
         public HashSet<string> Tags { get; set; }
+        public string Categories { get; set; }
         public bool isSearch { get; set; }
     }
 }

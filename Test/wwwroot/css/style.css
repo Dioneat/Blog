@@ -2071,16 +2071,18 @@ section {
   padding-top: 10px;
 }
 
-.blog .sidebar .categories ul a {
+.blog .sidebar .categories ul input {
   color: #1b54f5;
   transition: 0.3s;
+  border:0;
+  background:0;
 }
 
-    .blog .sidebar .categories ul a:hover {
+    .blog .sidebar .categories ul input:hover {
         color: #95adf0;
     }
 
-.blog .sidebar .categories ul a span {
+.blog .sidebar .categories ul input span {
   padding-left: 5px;
   color: #aaaaaa;
   font-size: 14px;

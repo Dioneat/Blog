@@ -31,7 +31,16 @@
                             </form>
 
                         </div>
-
+                          <h3 class="sidebar-title">Категории</h3>
+                        <form method="get">
+                           <div class="sidebar-item categories">
+                            <ul>
+                              <li><input type="submit" name="categories" value="Блог"/></<span>(@Model.Articles.Count())</span></li>
+                              <li><input type="submit" name="categories" value="Материал для родителей"/><span>(@Model.Posts.Count())</span></li>
+                            
+                            </ul>
+                          </div>
+                        </form>
                         <h3 class="sidebar-title">Тэги</h3>
                         <form method="get">
                             <div class="sidebar-item tags">
@@ -45,15 +54,17 @@
                                 </ul>
                             </div>
                         </form>
+                        
+
                         <a class="btn btn-sm btn-danger" asp-controller="Home" asp-action="Search">Сбросить</a>
 
                     </div>
 
                 </div>
                    
-                @if(Model.isSearch == true)
+                @if(Model.isSearch == true || Model.Categories != null)
                     {
-                         @if(Model.Articles.Count() != 0)
+                         @if((Model.Articles.Count() != 0 && Model.isSearch == true) || (Model.Categories == "Блог" && Model.isSearch == false))
                     {
                         <h2>Поиск во вкладке "Блог"</h2>
 
@@ -102,7 +113,7 @@
                     
 
 
-                    @if(Model.Posts.Count() != 0)
+                    @if((Model.Posts.Count() != 0  && Model.isSearch == true) || (Model.Categories == "Материал для родителей" && Model.isSearch == false))
                     {
                         <h2>Поиск во вкладке "Для родителей"</h2>
                     @foreach (var post in Model.Posts)
@@ -147,7 +158,7 @@
                     }
                         }
                     }
-                    @if(Model.isSearch==false)
+                    @if(Model.isSearch==false && Model.Categories == null)
                     {
                         <div><h2>Тут пока пусто...</h2></div>
                     }
