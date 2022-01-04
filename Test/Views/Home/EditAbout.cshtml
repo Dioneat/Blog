@@ -84,7 +84,7 @@
                                                     return function (e) {
                                                         var span = document.createElement('span');
                                                         span.innerHTML = ['<img class="img-thumbnail" src="', e.target.result,
-                                                            '" title="', escape(theFile.name), '"/><div><input type="text" id="EditDescription" name="EditDescription"><div>'].join('');
+                                                            '" title="', escape(theFile.name), '"/><div><input type="text" id="EditDescription" name="EditDescription"></div>'].join('');
                                                         document.getElementById('outputMulti').insertBefore(span, null);
                                                     };
                                                 })(f);
