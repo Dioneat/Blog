@@ -12,7 +12,7 @@ namespace Test.Models
         public void SendMail(string email, string content, string subject, string name)
         {//elenatimofeeva10@yandex.ru
             MimeMessage message = new MimeMessage();
-            message.From.Add(new MailboxAddress(name, email));
+            message.From.Add(new MailboxAddress(name, $"{email}.com"));
             message.To.Add(new MailboxAddress("hitbat@inbox.ru"));
             message.Subject = subject;
             var html = $"<div>Пришло новое сообщение!<div>От: {name}</div><div>Почта отправителя: <a href='mailto:{email}'>{email}</a></div><div>Сообщение: {content}</div></div>";
