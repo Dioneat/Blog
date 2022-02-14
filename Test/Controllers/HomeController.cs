@@ -215,7 +215,10 @@ namespace Test.Controllers
         [HttpPost]
         public IActionResult SendEmail(string name, string content, string subject, string email)
         {
-            service.SendMail(email, content, subject, name);
+            AntiSpam antiSpam = new AntiSpam();
+            bool isSpam = antiSpam.CheckSpam(subject.ToLower(), content.ToLower());
+            if(!isSpam)
+                service.SendMail(email, content, subject, name);
             return RedirectToAction("Contacts", "Home");
         }
 

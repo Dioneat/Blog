@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "jbMGrBOGRhvKsITcrH4wI3iuUb+oJA4RkCH+7Q5i6TehqeQqNpxLULhNAf3BGU4bAp0LDtWsxOoN3vEXmVKW8Q==",
+  "dgSpecHash": "oEMUGrNmXDeUIy4N/52yfn5fgnB61dGrrUn8msDNQgU9FqHAjjECnXe+TFWrf8aBjQysigQxjkkCdiGp5Cyr4Q==",
   "success": true,
-  "projectFilePath": "D:\\Downloads\\archive\\Blog\\Blog\\Test\\Test.csproj",
+  "projectFilePath": "D:\\VSProjects\\Blog\\Test\\Test.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Dioneat\\.nuget\\packages\\mailkit\\2.15.0\\mailkit.2.15.0.nupkg.sha512",
     "C:\\Users\\Dioneat\\.nuget\\packages\\microsoft.aspnetcore.cryptography.internal\\3.1.18\\microsoft.aspnetcore.cryptography.internal.3.1.18.nupkg.sha512",
@@ -113,7 +113,11 @@
     "C:\\Users\\Dioneat\\.nuget\\packages\\system.xml.readerwriter\\4.3.0\\system.xml.readerwriter.4.3.0.nupkg.sha512",
     "C:\\Users\\Dioneat\\.nuget\\packages\\system.xml.xdocument\\4.3.0\\system.xml.xdocument.4.3.0.nupkg.sha512",
     "C:\\Users\\Dioneat\\.nuget\\packages\\system.xml.xmldocument\\4.3.0\\system.xml.xmldocument.4.3.0.nupkg.sha512",
-    "C:\\Users\\Dioneat\\.nuget\\packages\\system.xml.xmlserializer\\4.3.0\\system.xml.xmlserializer.4.3.0.nupkg.sha512"
+    "C:\\Users\\Dioneat\\.nuget\\packages\\system.xml.xmlserializer\\4.3.0\\system.xml.xmlserializer.4.3.0.nupkg.sha512",
+    "C:\\Users\\Dioneat\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\3.1.22\\microsoft.netcore.app.host.win-x64.3.1.22.nupkg.sha512",
+    "C:\\Users\\Dioneat\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\3.1.10\\microsoft.aspnetcore.app.ref.3.1.10.nupkg.sha512",
+    "C:\\Users\\Dioneat\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\3.1.0\\microsoft.windowsdesktop.app.ref.3.1.0.nupkg.sha512",
+    "C:\\Users\\Dioneat\\.nuget\\packages\\microsoft.netcore.app.ref\\3.1.0\\microsoft.netcore.app.ref.3.1.0.nupkg.sha512"
   ],
   "logs": []
 }

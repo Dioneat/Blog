@@ -8278,11 +8278,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Downloads\\archive\\Blog\\Blog\\Test\\Test.csproj",
+      "projectUniqueName": "D:\\VSProjects\\Blog\\Test\\Test.csproj",
       "projectName": "Test",
-      "projectPath": "D:\\Downloads\\archive\\Blog\\Blog\\Test\\Test.csproj",
+      "projectPath": "D:\\VSProjects\\Blog\\Test\\Test.csproj",
       "packagesPath": "C:\\Users\\Dioneat\\.nuget\\packages\\",
-      "outputPath": "D:\\Downloads\\archive\\Blog\\Blog\\Test\\obj\\publish\\win-x86\\",
+      "outputPath": "D:\\VSProjects\\Blog\\Test\\obj\\publish\\win-x86\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Dioneat\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -8352,16 +8352,32 @@
         "warn": true,
         "downloadDependencies": [
           {
+            "name": "Microsoft.AspNetCore.App.Ref",
+            "version": "[3.1.10, 3.1.10]"
+          },
+          {
             "name": "Microsoft.AspNetCore.App.Runtime.win-x86",
-            "version": "[3.1.21, 3.1.21]"
+            "version": "[3.1.22, 3.1.22]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Host.win-x86",
+            "version": "[3.1.22, 3.1.22]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Ref",
+            "version": "[3.1.0, 3.1.0]"
           },
           {
             "name": "Microsoft.NETCore.App.Runtime.win-x86",
-            "version": "[3.1.21, 3.1.21]"
+            "version": "[3.1.22, 3.1.22]"
+          },
+          {
+            "name": "Microsoft.WindowsDesktop.App.Ref",
+            "version": "[3.1.0, 3.1.0]"
           },
           {
             "name": "Microsoft.WindowsDesktop.App.Runtime.win-x86",
-            "version": "[3.1.21, 3.1.21]"
+            "version": "[3.1.22, 3.1.22]"
           }
         ],
         "frameworkReferences": {
@@ -8372,7 +8388,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.100\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.101\\RuntimeIdentifierGraph.json"
       }
     },
     "runtimes": {

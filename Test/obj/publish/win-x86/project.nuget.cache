@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "mDfHf+vmPCeP3EBPrIjzjwWIOBz8zvHyeIJpd/PCn2Lsvn+Oou1Znh69N3bEoGn3iUwTMLlKRYF3l7giWgH8kg==",
+  "dgSpecHash": "zZeU5ynP+tmjq8oG6PdwfB75SMfcJDYlha2k70UUp1hV8hBgFAJ2XbmF4QJqNc4rfkGeCD+dZEKX4RvVaR8sdA==",
   "success": true,
-  "projectFilePath": "D:\\Downloads\\archive\\Blog\\Blog\\Test\\Test.csproj",
+  "projectFilePath": "D:\\VSProjects\\Blog\\Test\\Test.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Dioneat\\.nuget\\packages\\mailkit\\2.15.0\\mailkit.2.15.0.nupkg.sha512",
     "C:\\Users\\Dioneat\\.nuget\\packages\\microsoft.aspnetcore.cryptography.internal\\3.1.18\\microsoft.aspnetcore.cryptography.internal.3.1.18.nupkg.sha512",
@@ -137,9 +137,13 @@
     "C:\\Users\\Dioneat\\.nuget\\packages\\system.xml.xdocument\\4.3.0\\system.xml.xdocument.4.3.0.nupkg.sha512",
     "C:\\Users\\Dioneat\\.nuget\\packages\\system.xml.xmldocument\\4.3.0\\system.xml.xmldocument.4.3.0.nupkg.sha512",
     "C:\\Users\\Dioneat\\.nuget\\packages\\system.xml.xmlserializer\\4.3.0\\system.xml.xmlserializer.4.3.0.nupkg.sha512",
-    "C:\\Users\\Dioneat\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x86\\3.1.21\\microsoft.netcore.app.runtime.win-x86.3.1.21.nupkg.sha512",
-    "C:\\Users\\Dioneat\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x86\\3.1.21\\microsoft.windowsdesktop.app.runtime.win-x86.3.1.21.nupkg.sha512",
-    "C:\\Users\\Dioneat\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x86\\3.1.21\\microsoft.aspnetcore.app.runtime.win-x86.3.1.21.nupkg.sha512"
+    "C:\\Users\\Dioneat\\.nuget\\packages\\microsoft.netcore.app.ref\\3.1.0\\microsoft.netcore.app.ref.3.1.0.nupkg.sha512",
+    "C:\\Users\\Dioneat\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\3.1.0\\microsoft.windowsdesktop.app.ref.3.1.0.nupkg.sha512",
+    "C:\\Users\\Dioneat\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x86\\3.1.22\\microsoft.netcore.app.runtime.win-x86.3.1.22.nupkg.sha512",
+    "C:\\Users\\Dioneat\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x86\\3.1.22\\microsoft.windowsdesktop.app.runtime.win-x86.3.1.22.nupkg.sha512",
+    "C:\\Users\\Dioneat\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x86\\3.1.22\\microsoft.aspnetcore.app.runtime.win-x86.3.1.22.nupkg.sha512",
+    "C:\\Users\\Dioneat\\.nuget\\packages\\microsoft.netcore.app.host.win-x86\\3.1.22\\microsoft.netcore.app.host.win-x86.3.1.22.nupkg.sha512",
+    "C:\\Users\\Dioneat\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\3.1.10\\microsoft.aspnetcore.app.ref.3.1.10.nupkg.sha512"
   ],
   "logs": []
 }
