@@ -35,8 +35,15 @@
                         <form method="get">
                            <div class="sidebar-item categories">
                             <ul>
-                              <li><input type="submit" name="categories" value="Блог"/></<span>(@Model.Articles.Count())</span></li>
-                              <li><input type="submit" name="categories" value="Материал для родителей"/><span>(@Model.Posts.Count())</span></li>
+                                @if(Model.Articles.Count() != 0)
+                                        {
+                                        <li><input type="submit" name="categories" value="Блог"/><span>(@Model.Articles.Count())</span></li>                                            
+                                        }
+                               @if(Model.Posts.Count() != 0)
+                                        {
+                                        <li><input type="submit" name="categories" value="Материал для родителей"/><span>(@Model.Posts.Count())</span></li>
+                                            
+                                        }
                             
                             </ul>
                           </div>

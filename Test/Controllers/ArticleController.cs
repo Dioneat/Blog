@@ -35,7 +35,6 @@ namespace Test.Controllers
                 Id = article.Id,
                 Title = article.Title,
                 ImageName = article.ImageName,
-                Date = article.Date,
                 Content = article.Content,
                 ShortDesc = article.ShortDesc,
                 Author = article.Author,
@@ -97,7 +96,6 @@ namespace Test.Controllers
                 {
                     Author = avm.Author,
                     Content = avm.Content.Replace("<img>", "<img class=\"img-fluid\">"),
-                    Date = avm.Date,
                     ShortDesc = avm.ShortDesc,
                     ImageName = avm.ImageName,
                     Tags = avm.ArticleTags,
@@ -132,7 +130,7 @@ namespace Test.Controllers
                 {
                     Author = article.Author,
                     Content = article.Content,
-                    Date = article.Date,
+                  //  Date = article.Date,
                     ShortDesc = article.ShortDesc,
                     ImageName = article.ImageName,
                     ArticleTags = article.Tags,
@@ -167,7 +165,7 @@ namespace Test.Controllers
                     Id = avm.Id,    
                     Author = avm.Author,
                     Content = avm.Content,
-                    Date = avm.Date,
+                    //Date = avm.Date,
                     ShortDesc = avm.ShortDesc,
                     ImageName = avm.ImageName,
                     Tags = avm.ArticleTags,

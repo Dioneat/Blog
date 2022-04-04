@@ -1,5 +1,3 @@
-using System;
-
 namespace Test.Models
 {
     public class ErrorViewModel

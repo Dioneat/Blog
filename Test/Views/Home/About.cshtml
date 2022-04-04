@@ -23,16 +23,22 @@
                     <a class="btn btn-sm btn-primary editButton" asp-controller="Home" asp-action="EditAbout">Редактировать страницу</a>
 
                 }
-            <div class="row">
+          
                 @if (Model != null && Model.Content != null)
                 {
-                    @Html.Raw(Model.Content)
+                    <div class="row">
+                        @Html.Raw(Model.Content)
+                    </div>
+
 
                 }
             </div>
-            </div>
         </section>
-        <hr />
+         @if (Model != null && Model.Content != null)
+         {
+            <hr />
+         }
+       
         <div class="div-container-about"><h1>Портфолио</h1></div>
         <section class="portfolio">
 

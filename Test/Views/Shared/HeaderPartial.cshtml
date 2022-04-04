@@ -7,7 +7,7 @@
 
         <nav id="navbar" class="navbar">
             <ul>
-                                <li><a asp-controller="Home" asp-action="Index">Главная<i class="bi bi-house"></i></a></li>
+                <li><a asp-controller="Home" asp-action="Index">Главная<i class="bi bi-house"></i></a></li>
                 <li><a asp-controller="Home" asp-action="About">О себе<i class="bi bi-person"></i></a></li>
                 <li><a asp-controller="Home" asp-action="Blog">Блог<i class="bi bi-newspaper"></i></a></li>
                 <li><a asp-controller="Home" asp-action="Contacts">Контакты<i class="bi bi-phone"></i></a></li>
@@ -16,21 +16,13 @@
                     <a href="#"><span>Дополнительная информация</span> <i class="bi bi-chevron-down"></i></a>
                     <ul>
                         <li><a asp-controller="AdditionalInformation" asp-action="ForParents">Для родителей</a></li>
-                                        <li><hr /></li>
+                        <li><hr /></li>
 
-                                        @if (User.Identity.IsAuthenticated)
+                @if (User.Identity.IsAuthenticated)
                 {
                     <li class="dropdown">
-                        @{ 
-                            string name;
-                            if (User.Identity.Name == "Admin")
-                                name = "Елена Тимофеева";
-                            else if (User.Identity.Name == "Superadmin")
-                                name = "Администратор";
-                            else
-                                name = "user";
-                        }
-                        <a href="#"><span>@name</span> <i class="bi bi-chevron-down"></i></a>
+
+                        <a href="#"><span>Елена Тимофеева</span> <i class="bi bi-chevron-down"></i></a>
                         <ul>
                             <li><a asp-controller="Account" asp-action="Index">Админ-панель</a></li>
                             <li>

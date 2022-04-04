@@ -16,8 +16,8 @@ namespace Test.Controllers
 {
     public class AdditionalInformationController : Controller
     {
-        private ApplicationDbContext db;
-        IWebHostEnvironment webHost;
+        private readonly ApplicationDbContext db;
+        private readonly IWebHostEnvironment webHost;
         public IActionResult ForParents()
         {
             return View(db.Posts.ToList());

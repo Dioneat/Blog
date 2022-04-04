@@ -1,9 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System;
 
 namespace Test.Models
 {
@@ -16,14 +11,14 @@ namespace Test.Models
 
         public string Author { get; set; }
 
-        public DateTime Date { get; set; } = DateTime.Now;
+        public string Date { get { return DateTime.Now.ToString("g"); } }
 
-        [NotMapped]
-        public IFormFile ImageFile { get; set; }
+        //[NotMapped]
+        //public IFormFile ImageFile { get; set; }
         public string ImageName { get; set; }
 
-        [NotMapped]
-        public string[] EditTags { get; set; }
+        //[NotMapped]
+        //public string[] EditTags { get; set; }
         public string Tags { get; set; }
 
 

@@ -1,15 +1,10 @@
 ﻿using MimeKit;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Mail;
-using System.Threading.Tasks;
 
 namespace Test.Models
 {
     public class AntiSpam
     {
-        public string[] SpamWords = { "seo", "сео", "website", "website`s", "websites", "domain", "продвижение сайтов", "продвижение сайта", "создание сайта", "создание сайтов" };
+        public string[] SpamWords = { "seo", "сео", "website", "website`s", "websites", "domain", "продвижение сайтов", "продвижение сайта", "создание сайта", "создание сайтов", "база", "базы", "базу" };
         public bool CheckSpam(string subject, string message)
         {
             foreach (var word in SpamWords)
