@@ -12,6 +12,7 @@ D:\VSProjects\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\wwwroot\img
 D:\VSProjects\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\wwwroot\img\forparents\title\photo_2021-11-27_20-13-55210524528.jpg
 D:\VSProjects\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\wwwroot\img\forparents\title\photo_2021-11-27_20-13-55210927912.jpg
 D:\VSProjects\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\wwwroot\img\forparents\title\photo_2021-11-27_20-13-55211000894.jpg
+D:\VSProjects\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\wwwroot\img\forparents\title\Screenshot_22222520982.png
 D:\VSProjects\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\wwwroot\img\index\4CI-IdZYqbk.jpg
 D:\VSProjects\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\wwwroot\img\index\hero.jpeg
 D:\VSProjects\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\wwwroot\img\main.jpg
@@ -526,7 +527,7 @@ D:\VSProjects\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\dbgshim.dll
 D:\VSProjects\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\hostfxr.dll
 D:\VSProjects\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\hostpolicy.dll
 D:\VSProjects\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\mscordaccore.dll
-D:\VSProjects\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\mscordaccore_x86_x86_4.700.21.56803.dll
+D:\VSProjects\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\mscordaccore_x86_x86_4.700.22.11601.dll
 D:\VSProjects\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\mscordbi.dll
 D:\VSProjects\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\mscorrc.debug.dll
 D:\VSProjects\Blog\Test\obj\Release\netcoreapp3.1\win-x86\PubTmp\Out\mscorrc.dll

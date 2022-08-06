@@ -39,7 +39,7 @@ namespace Test.Controllers
             return NotFound();
         }
 
-        [Authorize(Roles = "admin, superadmin")]
+        [Authorize(Roles = "admin")]
         public ActionResult Create() 
         {
             var post = new PostViewModel();
@@ -64,11 +64,7 @@ namespace Test.Controllers
             {
                 if (pvm.File != null)
                 {
-                    string wwwRootPath = webHost.WebRootPath;
-                    string fileName = Path.GetFileNameWithoutExtension(pvm.File.FileName);
-                    string extension = Path.GetExtension(pvm.File.FileName);
-                    pvm.ImageName = fileName = fileName + DateTime.Now.ToString("yymmssfff") + extension;
-                    string path = Path.Combine(wwwRootPath + "/img/forparents/title/", fileName);
+                    var path = pvm.ImageName = InitializePath(pvm.File.FileName, "/img/forparents/title/");
                     using (var fs = new FileStream(path, FileMode.Create))
                     {
                         await pvm.File.CopyToAsync(fs);
@@ -90,7 +86,16 @@ namespace Test.Controllers
 
         }
 
-        [Authorize(Roles = "admin, superadmin")]
+        private string InitializePath(string file, string path)
+        {
+            string wwwRootPath = webHost.WebRootPath;
+            string fileName = Path.GetFileNameWithoutExtension(file);
+            string extension = Path.GetExtension(file);
+            fileName = fileName + DateTime.Now.ToString("yymmssfff") + extension;
+            return Path.Combine(wwwRootPath + path, fileName);
+        }
+
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> Edit(int? id)
         {
             if (id != null)
@@ -128,13 +133,9 @@ namespace Test.Controllers
         {
             if (ModelState.IsValid)
             {
-                    if (pvm.File != null)
+                if (pvm.File != null)
                 {
-                    string wwwRootPath = webHost.WebRootPath;
-                    string fileName = Path.GetFileNameWithoutExtension(pvm.File.FileName);
-                    string extension = Path.GetExtension(pvm.File.FileName);
-                    pvm.ImageName = fileName = fileName + DateTime.Now.ToString("yymmssfff") + extension;
-                    string path = Path.Combine(wwwRootPath + "/img/forparents/title/", fileName);
+                    string path = pvm.ImageName = InitializePath(pvm.File.FileName, "/img/forparents/title/");
                     using (var fs = new FileStream(path, FileMode.Create))
                     {
                         await pvm.File.CopyToAsync(fs);
@@ -189,7 +190,7 @@ namespace Test.Controllers
                 string fileName = Path.GetFileNameWithoutExtension(photo.FileName);
                 string extension = Path.GetExtension(photo.FileName);
                 fileName = fileName + DateTime.Now.ToString("yymmssfff") + extension;
-                string serverMapPath = Path.Combine(wwwRootPath, "/img/forparents/content/", fileName);
+                string serverMapPath = InitializePath(photo.FileName, "/img/forparents/content/");
 
                 using (var fs = new FileStream(serverMapPath, FileMode.Create))
                 {

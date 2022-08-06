@@ -30,7 +30,7 @@ namespace Test.Controllers
         public async Task<IActionResult> Index()
         {
             var source = db.Articles;
-            var items = await source.Take(3).ToListAsync();
+            var items = await source.Take(5).ToListAsync();
             var sections = db.Sections.ToList();
 
             var hvm = new HomeViewModel()
@@ -41,7 +41,7 @@ namespace Test.Controllers
 
             return View(hvm);
         }
-        [Authorize(Roles = "admin, superadmin")]
+        [Authorize(Roles = "admin")]
         public IActionResult CreateSection()
         {
             return View();
@@ -59,7 +59,7 @@ namespace Test.Controllers
             return NotFound();
 
         }
-        [Authorize(Roles = "admin, superadmin")]
+        [Authorize(Roles = "admin")]
         public IActionResult EditSection(int? id)
         {
             var section = db.Sections.FirstOrDefault(p => p.Id == id);
@@ -97,7 +97,7 @@ namespace Test.Controllers
             return View(db.About.FirstOrDefault());
         }
 
-        [Authorize(Roles = "admin, superadmin")]
+        [Authorize(Roles = "admin")]
         public IActionResult EditAbout()
         {
             return View(db.About.FirstOrDefault());
@@ -120,16 +120,8 @@ namespace Test.Controllers
                     {
                         if (image != null)
                         {
-                            string wwwRootPath = webHost.WebRootPath;
-                            string fileName = Path.GetFileNameWithoutExtension(image.FileName);
-                            string extension = Path.GetExtension(image.FileName);
-                            fileName = fileName + DateTime.Now.ToString("yymmssfff") + extension;
-                            string path = Path.Combine(webHost.WebRootPath + "/img/about/portfolio/", fileName);
-                            using (var fs = new FileStream(path, FileMode.Create))
-                            {
-                                await image.CopyToAsync(fs);
-                            }
-                            fileNames.Add(fileName);
+                            var fileName = AddImage(image);
+                            fileNames.Add(fileName.ToString()); // TODO
                         }
 
                     }
@@ -163,6 +155,22 @@ namespace Test.Controllers
             }
             return NotFound();
         }
+
+        private async Task<string> AddImage(Microsoft.AspNetCore.Http.IFormFile image)
+        {
+            string wwwRootPath = webHost.WebRootPath;
+            string fileName = Path.GetFileNameWithoutExtension(image.FileName);
+            string extension = Path.GetExtension(image.FileName);
+            fileName = fileName + DateTime.Now.ToString("yymmssfff") + extension;
+            string path = Path.Combine(webHost.WebRootPath + "/img/about/portfolio/", fileName);
+            using (var fs = new FileStream(path, FileMode.Create))
+            {
+                await image.CopyToAsync(fs);
+            }
+            return fileName;
+           
+        }
+
         public async Task<IActionResult> Blog(string tag, string name, int page = 1)
         {
             int pageSize = 6; 

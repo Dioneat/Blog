@@ -47,7 +47,7 @@ namespace Test.Controllers
             return NotFound();
         }
 
-        [Authorize(Roles = "admin, superadmin")]
+        [Authorize(Roles = "admin")]
         public ActionResult Create()
         {
           
@@ -110,7 +110,7 @@ namespace Test.Controllers
 
         }
 
-        [Authorize(Roles = "admin, superadmin")]
+        [Authorize(Roles = "admin")]
         public ActionResult Edit(int? id)
         {
             if (id != null)
