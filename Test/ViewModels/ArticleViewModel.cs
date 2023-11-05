@@ -11,7 +11,6 @@ namespace Test.ViewModels
 
         public int Id { get; set; }
         public string Title { get; set; }
-        //public DateTime Date { get; set; } = DateTime.Now;
         public string Date { get { return DateTime.Now.ToString("g"); } }
 
         public IFormFile ImageFile { get; set; }
