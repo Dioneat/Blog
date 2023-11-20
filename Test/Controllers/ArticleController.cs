@@ -224,7 +224,7 @@ namespace Test.Controllers
                 {
                     photo.CopyTo(fs);
                 }
-                path = "https://elenatimofeeva.ru/" + "img/blog/content/" + fileName;
+                path = "https://localhost:44302/" + "img/blog/content/" + fileName;
             }
             return Json(new { url = path });
         }
