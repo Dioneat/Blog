@@ -1,0 +1,78 @@
+﻿@using Blog10.Models
+@using Blog10.Services
+
+@inject IBlogService BlogService
+
+<section id="blog" class="section section-bg-secondary">
+    <div class="section-header fade-up">
+        <h2 class="section-title">Блог для родителей</h2>
+        <p class="section-subtitle">Полезные статьи, советы и упражнения для развития речи.</p>
+    </div>
+
+    <div class="grid-3">
+        @if (posts.Any())
+        {
+            @foreach (var post in posts)
+            {
+                <div class="card blog-card fade-up">
+                    <div class="blog-thumb">
+                        @if (!string.IsNullOrEmpty(post.CoverImageUrl))
+                        {
+                            <img src="@post.CoverImageUrl" alt="@post.Title">
+                        }
+                        else
+                        {
+                            <div class="blog-placeholder">
+                                <i class="fa-solid fa-shapes placeholder-icon"></i>
+                                <span class="placeholder-text">Статья</span>
+                            </div>
+                        }
+                        
+                        @if (post.Tags != null && post.Tags.Any())
+                        {
+                            <div class="blog-card-tags">
+                                @foreach (var tag in post.Tags.Take(2))
+                                {
+                                    <span class="blog-card-tag">@tag</span>
+                                }
+                            </div>
+                        }
+                    </div>
+                    <div class="blog-content">
+                        <div class="blog-meta">
+                            <span><i class="fa-regular fa-calendar"></i> @post.CreatedAt.ToString("dd MMM yyyy")</span>
+                        </div>
+                        <h3>@post.Title</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 20px;">@post.ShortDescription</p>
+                        
+                        <a href="@GetArticleUrl(post)" class="blog-link" data-enhance-nav="false">Читать статью <i class="fa-solid fa-arrow-right-long"></i></a>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <p style="text-align: center; grid-column: 1 / -1;">Статьи скоро появятся!</p>
+        }
+    </div>
+
+    <div style="text-align: center; margin-top: 40px;" class="fade-up">
+        <a href="/blog" class="cta-btn" style="background: transparent; border: 2px solid var(--primary-color); color: var(--primary-color); box-shadow: none;">Все статьи блога</a>
+    </div>
+</section>
+
+@code {
+    private List<BlogPost> posts = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        posts = await BlogService.GetRecentPublishedPostsAsync(3);
+    }
+
+    private string GetArticleUrl(BlogPost post)
+    {
+        return string.IsNullOrWhiteSpace(post.Slug)
+            ? $"/blog/{post.Id}"
+            : $"/blog/{post.Id}/{post.Slug}";
+    }
+}

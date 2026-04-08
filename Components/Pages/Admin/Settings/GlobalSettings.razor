@@ -1,0 +1,125 @@
+﻿@page "/admin/settings"
+@layout AdminLayout
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+@using Blog10.Services
+@using Radzen
+@using Radzen.Blazor
+
+@inject SettingsService SettingsService
+@inject NotificationService Notification
+
+<PageTitle>Глобальные настройки</PageTitle>
+
+<RadzenText TextStyle="TextStyle.H3" TagName="TagName.H1" class="rz-mb-4">Настройки интеграций</RadzenText>
+
+<RadzenStack Gap="2rem" style="max-width: 800px;">
+
+    <RadzenCard class="rz-p-4" style="border-top: 4px solid #0088cc;">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" class="rz-mb-4">
+            <i class="fa-brands fa-telegram" style="font-size: 2rem; color: #0088cc;"></i>
+            <RadzenText TextStyle="TextStyle.H5" class="rz-m-0">Настройки Telegram</RadzenText>
+        </RadzenStack>
+
+        <RadzenStack Gap="1rem">
+            <RadzenFormField Text="Токен бота (BotFather)" style="width: 100%;">
+                <RadzenPassword @bind-Value="tgBotToken" style="width: 100%;" />
+            </RadzenFormField>
+            
+            <RadzenFormField Text="ID или Юзернейм канала (например: logoped_timofeeva)" style="width: 100%;">
+                <RadzenTextBox @bind-Value="tgChannelId" style="width: 100%;" />
+            </RadzenFormField>
+        </RadzenStack>
+    </RadzenCard>
+
+    <RadzenCard class="rz-p-4" style="border-top: 4px solid #0077ff;">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" class="rz-mb-4">
+            <i class="fa-brands fa-vk" style="font-size: 2rem; color: #0077ff;"></i>
+            <RadzenText TextStyle="TextStyle.H5" class="rz-m-0">Настройки ВКонтакте</RadzenText>
+        </RadzenStack>
+
+        <RadzenStack Gap="1rem">
+            <RadzenFormField Text="Сервисный ключ (для чтения стены)" style="width: 100%;">
+                <RadzenPassword @bind-Value="vkServiceToken" style="width: 100%;" />
+            </RadzenFormField>
+            
+            <RadzenFormField Text="Пользовательский токен (для публикации)" style="width: 100%;">
+                <RadzenPassword @bind-Value="vkUserToken" style="width: 100%;" />
+            </RadzenFormField>
+
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem">
+                <RadzenFormField Text="Домен группы (например: logoped_timofeeva)" style="width: 100%;">
+                    <RadzenTextBox @bind-Value="vkDomain" style="width: 100%;" />
+                </RadzenFormField>
+                
+                <RadzenFormField Text="Цифровой ID группы (без минуса)" style="width: 100%;">
+                    <RadzenTextBox @bind-Value="vkGroupId" style="width: 100%;" />
+                </RadzenFormField>
+            </RadzenStack>
+        </RadzenStack>
+    </RadzenCard>
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <RadzenAlert AlertStyle="AlertStyle.Danger" ShowIcon="true" class="rz-mb-4">
+            <b>Ошибка загрузки:</b> @errorMessage
+        </RadzenAlert>
+    }
+
+    <RadzenButton Text="Сохранить настройки" Icon="save" ButtonStyle="ButtonStyle.Success" Size="ButtonSize.Large" Click="SaveSettings" IsBusy="@isSaving" />
+</RadzenStack>
+
+@code {
+    private string tgBotToken = "";
+    private string tgChannelId = "";
+    private string vkServiceToken = "";
+    private string vkUserToken = "";
+    private string vkDomain = "";
+    private string vkGroupId = "";
+    
+    private bool isSaving = false;
+    private string errorMessage = ""; 
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            tgBotToken = await SettingsService.GetSettingAsync("TgBotToken");
+            tgChannelId = await SettingsService.GetSettingAsync("TgChannelId");
+            vkServiceToken = await SettingsService.GetSettingAsync("VkServiceToken");
+            vkUserToken = await SettingsService.GetSettingAsync("VkUserToken");
+            vkDomain = await SettingsService.GetSettingAsync("VkDomain");
+            vkGroupId = await SettingsService.GetSettingAsync("VkGroupId");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private async Task SaveSettings()
+    {
+        isSaving = true;
+        errorMessage = "";
+        StateHasChanged();
+
+        try
+        {
+            await SettingsService.SetSettingAsync("TgBotToken", tgBotToken);
+            await SettingsService.SetSettingAsync("TgChannelId", tgChannelId, encrypt: false);
+            await SettingsService.SetSettingAsync("VkServiceToken", vkServiceToken);
+            await SettingsService.SetSettingAsync("VkUserToken", vkUserToken);
+            await SettingsService.SetSettingAsync("VkDomain", vkDomain, encrypt: false);
+            await SettingsService.SetSettingAsync("VkGroupId", vkGroupId, encrypt: false);
+
+            Notification.Notify(NotificationSeverity.Success, "Сохранено", "Настройки успешно обновлены и зашифрованы!");
+        }
+        catch (Exception ex)
+        {
+            Notification.Notify(NotificationSeverity.Error, "Ошибка сохранения", ex.Message);
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+}

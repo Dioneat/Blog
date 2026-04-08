@@ -1,0 +1,111 @@
+﻿@page "/admin/reviews/edit/{Id:int}"
+@layout AdminLayout
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+@using Blog10.Data
+@using Blog10.Models
+@using Microsoft.EntityFrameworkCore
+@using Radzen
+@using Radzen.Blazor
+
+@inject AppDbContext DbContext
+@inject NavigationManager NavManager
+
+<PageTitle>Редактирование отзыва</PageTitle>
+
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" class="rz-mb-4">
+    <RadzenButton Icon="arrow_back" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Click="@(() => NavManager.NavigateTo("/admin/reviews"))" />
+    <RadzenText TextStyle="TextStyle.H3" TagName="TagName.H1" class="rz-m-0">Редактирование отзыва</RadzenText>
+</RadzenStack>
+
+@if (editReview == null)
+{
+    <RadzenProgressBar Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+}
+else
+{
+    <RadzenTemplateForm TItem="Review" Data="@editReview" Submit="OnSubmit">
+        <RadzenStack Gap="1.5rem">
+            
+            <RadzenStack Gap="0.5rem">
+                <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3" class="rz-m-0">Скриншот отзыва</RadzenText>
+                
+                <RadzenUpload Url="api/upload/image" Accept="image/*" Complete="OnUploadComplete" style="width: 100%;" ChooseText="Выбрать другой скриншот..." />
+                
+                @if (!string.IsNullOrEmpty(editReview.ImageUrl))
+                {
+                    <div style="margin-top: 10px;">
+                        <img src="@editReview.ImageUrl" alt="Предпросмотр скриншота" style="max-width: 300px; border-radius: 8px; border: 1px solid var(--rz-secondary-light);" />
+                    </div>
+                }
+            </RadzenStack>
+
+            <RadzenFormField Text="Имя родителя">
+                <RadzenTextBox @bind-Value="editReview.AuthorName" Name="Author" style="width: 100%;" />
+                <RadzenRequiredValidator Component="Author" Text="Укажите имя" />
+            </RadzenFormField>
+
+            <RadzenFormField Text="Информация о ребенке (Мама Оли, 6 лет)">
+                <RadzenTextBox @bind-Value="editReview.ChildInfo" style="width: 100%;" />
+            </RadzenFormField>
+
+            <RadzenFormField Text="Текст отзыва (для описания или дублирования)">
+                <RadzenTextArea @bind-Value="editReview.Text" style="width: 100%;" Rows="5" />
+            </RadzenFormField>
+
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+                <RadzenCheckBox @bind-Value="editReview.IsDraft" Name="IsDraft" />
+                <RadzenLabel Text="Скрыть отзыв (черновик)" Component="IsDraft" class="rz-ml-2" />
+            </RadzenStack>
+
+            <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Large" Icon="save" Text="Обновить отзыв" ButtonStyle="ButtonStyle.Success" style="width: 200px;" />
+        </RadzenStack>
+    </RadzenTemplateForm>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Review? editReview;
+
+    protected override async Task OnInitializedAsync()
+    {
+        editReview = await DbContext.Reviews.FindAsync(Id);
+
+        if (editReview == null)
+        {
+            NavManager.NavigateTo("/admin/reviews");
+        }
+    }
+
+    private void OnUploadComplete(UploadCompleteEventArgs args)
+    {
+        try
+        {
+            if (editReview != null)
+            {
+                if (args.JsonResponse.RootElement.TryGetProperty("Url", out var urlElement))
+                {
+                    editReview.ImageUrl = urlElement.GetString() ?? string.Empty;
+                }
+                else if (args.JsonResponse.RootElement.TryGetProperty("url", out var lowerUrlElement))
+                {
+                    editReview.ImageUrl = lowerUrlElement.GetString() ?? string.Empty;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка при загрузке: {ex.Message}");
+        }
+    }
+
+    private async Task OnSubmit(Review review)
+    {
+        DbContext.Reviews.Update(review);
+        await DbContext.SaveChangesAsync();
+        
+        NavManager.NavigateTo("/admin/reviews");
+    }
+}

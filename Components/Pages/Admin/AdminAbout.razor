@@ -1,0 +1,113 @@
+﻿@page "/admin/about"
+@rendermode InteractiveServer
+@using Blog10.Services
+@using Blog10.Models
+@using System.IO
+@using Radzen
+@using Radzen.Blazor
+@inject IAboutService AboutService
+@inject NotificationService Notification
+@inject IWebHostEnvironment Environment
+
+<RadzenText TextStyle="TextStyle.H3">Редактирование страницы "Обо мне"</RadzenText>
+
+@if (model == null) { <RadzenProgressBar ProgressBarStyle="ProgressBarStyle.Primary" Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" /> }
+else
+{
+    <RadzenTemplateForm TItem="AboutData" Data="@model" Submit="OnSave">
+        <div class="rz-p-4">
+            <RadzenTabs>
+                <Tabs>
+                    <RadzenTabsItem Text="Главный блок">
+                        <RadzenStack Gap="1.5rem">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <RadzenFormField Text="Заголовок (Ваше имя)" style="width:100%; margin-bottom: 1rem;">
+                                        <RadzenTextBox @bind-Value="model.HeroTitle" />
+                                    </RadzenFormField>
+                                    <RadzenFormField Text="Подзаголовок (Профессия)" style="width:100%">
+                                        <RadzenTextBox @bind-Value="model.HeroSubtitle" />
+                                    </RadzenFormField>
+                                </div>
+                                <div class="col-md-4">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2">Фотография профиля</RadzenText>
+                                    @if (!string.IsNullOrEmpty(model.ProfileImageUrl))
+                                    {
+                                        <img src="@model.ProfileImageUrl" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-bottom: 10px;" />
+                                    }
+                                    <br/>
+                                    <InputFile OnChange="HandleImageUpload" accept="image/*" class="form-control" />
+                                </div>
+                            </div>
+                        </RadzenStack>
+                    </RadzenTabsItem>
+
+                    <RadzenTabsItem Text="Цифры и Цитата">
+                        <RadzenStack Wrap="FlexWrap.Wrap" Orientation="Orientation.Horizontal" Gap="1rem" class="rz-mb-4">
+                            <RadzenFormField Text="Опыт" style="flex:1"><RadzenTextBox @bind-Value="model.StatsExperience" /></RadzenFormField>
+                            <RadzenFormField Text="Детей" style="flex:1"><RadzenTextBox @bind-Value="model.StatsChildren" /></RadzenFormField>
+                            <RadzenFormField Text="Сертификатов" style="flex:1"><RadzenTextBox @bind-Value="model.StatsCertificates" /></RadzenFormField>
+                        </RadzenStack>
+                        <RadzenFormField Text="Текст цитаты" style="width:100%; margin-bottom: 1rem;">
+                            <RadzenTextArea @bind-Value="model.QuoteText" Rows="3" />
+                        </RadzenFormField>
+                        <RadzenFormField Text="Автор цитаты" style="width:100%">
+                            <RadzenTextBox @bind-Value="model.QuoteAuthor" />
+                        </RadzenFormField>
+                    </RadzenTabsItem>
+
+                    <RadzenTabsItem Text="Большие тексты">
+                        <RadzenText TextStyle="TextStyle.Subtitle2">Биография / Моя история</RadzenText>
+                        <RadzenHtmlEditor @bind-Value="model.BioHtml" style="height: 300px; margin-bottom: 1rem;" />
+                        
+                        @* ИСПРАВЛЕНИЕ: Используем адаптивную сетку row и col-md-6 *@
+                        <div class="row">
+                            <div class="col-12 col-md-6 mb-3">
+                                <RadzenText TextStyle="TextStyle.Subtitle2">Образование</RadzenText>
+                                <RadzenHtmlEditor @bind-Value="model.EducationHtml" style="height: 250px;" />
+                            </div>
+                            <div class="col-12 col-md-6 mb-3">
+                                <RadzenText TextStyle="TextStyle.Subtitle2">Принципы работы</RadzenText>
+                                <RadzenHtmlEditor @bind-Value="model.PrinciplesHtml" style="height: 250px;" />
+                            </div>
+                        </div>
+                    </RadzenTabsItem>
+                </Tabs>
+            </RadzenTabs>
+            
+            <RadzenButton ButtonType="ButtonType.Submit" Text="Сохранить изменения" Icon="save" ButtonStyle="ButtonStyle.Success" Size="ButtonSize.Large" class="rz-mt-4" style="width: 100%;" />
+        </div>
+    </RadzenTemplateForm>
+}
+
+@code {
+    private AboutData? model;
+
+    protected override async Task OnInitializedAsync() => model = await AboutService.GetAboutDataAsync();
+
+    private async Task HandleImageUpload(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null)
+        {
+            var folderPath = Path.Combine(Environment.WebRootPath, "uploads");
+            Directory.CreateDirectory(folderPath);
+
+            var fileName = $"{Guid.NewGuid()}_{file.Name}";
+            var filePath = Path.Combine(folderPath, fileName);
+
+            using var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+            using var fs = new FileStream(filePath, FileMode.Create);
+            await stream.CopyToAsync(fs);
+
+            model!.ProfileImageUrl = $"/uploads/{fileName}";
+            StateHasChanged();
+        }
+    }
+
+    async Task OnSave()
+    {
+        await AboutService.UpdateAboutDataAsync(model!);
+        Notification.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Готово", Detail = "Страница обновлена!" });
+    }
+}

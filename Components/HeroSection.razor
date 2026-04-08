@@ -1,0 +1,36 @@
+﻿@using Blog10.Services
+@inject IAboutService AboutService
+
+<section id="home" class="section hero">
+    <div class="hero-content fade-up">
+        <span class="hero-tag">Логопед-педагог • Опыт 12 лет</span>
+        <h1>Говорим красиво и уверенно! Современная <span class="highlight">логопедия</span> с любовью к детям.</h1>
+        <p>Помогаю детям преодолеть речевые трудности через игру и доказательные методики. Индивидуальный маршрут развития для каждого ребенка.</p>
+        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+            <a href="#contacts" class="cta-btn">Записаться на диагностику</a>
+            <a href="#about" class="cta-btn" style="background: var(--accent-light); color: var(--primary-color); box-shadow: none;">Подробнее обо мне</a>
+        </div>
+    </div>
+
+    <div class="hero-image-container fade-up">
+        <div class="floating-badge badge-1">
+            <i class="fa-solid fa-star" style="color: #FFD700;"></i> 500+ счастливых семей
+        </div>
+        <div class="floating-badge badge-2">
+            <i class="fa-solid fa-certificate" style="color: var(--primary-color);"></i> Сертифицированный эксперт
+        </div>
+
+        <div class="hero-blob">
+            <img src="@(aboutData?.MainHeroImageUrl ?? "/img/default-hero.jpg")" alt="Логопед занимается с ребенком">
+        </div>
+    </div>
+</section>
+
+@code {
+    private Blog10.Models.AboutData? aboutData;
+
+    protected override async Task OnInitializedAsync()
+    {
+        aboutData = await AboutService.GetAboutDataAsync();
+    }
+}

@@ -1,0 +1,84 @@
+﻿@page "/admin/reviews/create"
+@layout AdminLayout
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+@using Blog10.Data
+@using Blog10.Models
+@using Radzen
+@using Radzen.Blazor
+@inject AppDbContext DbContext
+@inject NavigationManager NavManager
+
+<PageTitle>Добавить отзыв</PageTitle>
+
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" class="rz-mb-4">
+    <RadzenButton Icon="arrow_back" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Click="@(() => NavManager.NavigateTo("/admin/reviews"))" />
+    <RadzenText TextStyle="TextStyle.H3" class="rz-m-0">Новый отзыв</RadzenText>
+</RadzenStack>
+
+<RadzenTemplateForm TItem="Review" Data="@newReview" Submit="OnSubmit">
+    <RadzenStack Gap="1.5rem">
+        
+        <RadzenStack Gap="0.5rem">
+            <RadzenText TextStyle="TextStyle.Subtitle2">Скриншот отзыва</RadzenText>
+            <RadzenUpload Url="api/upload/image" Name="file" Accept="image/*" Complete="OnUploadComplete" ChooseText="Выбрать скриншот..." style="width: 100%;" />            @if (!string.IsNullOrEmpty(newReview.ImageUrl))
+            {
+                <RadzenImage Path="@newReview.ImageUrl" style="max-width: 200px; border-radius: 8px; border: 1px solid #ddd;" />
+            }
+        </RadzenStack>
+
+        <RadzenFormField Text="Имя родителя">
+            <RadzenTextBox @bind-Value="newReview.AuthorName" Name="Author" style="width: 100%;" />
+            <RadzenRequiredValidator Component="Author" Text="Укажите имя" />
+        </RadzenFormField>
+
+        <RadzenFormField Text="Информация о ребенке (Мама Оли, 6 лет)">
+            <RadzenTextBox @bind-Value="newReview.ChildInfo" style="width: 100%;" />
+        </RadzenFormField>
+
+        <RadzenFormField Text="Текст отзыва (для описания или дублирования)">
+            <RadzenTextArea @bind-Value="newReview.Text" style="width: 100%;" Rows="5" />
+        </RadzenFormField>
+
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+            <RadzenCheckBox @bind-Value="newReview.IsDraft" Name="IsDraft" />
+            <RadzenLabel Text="Черновик" Component="IsDraft" class="rz-ml-2" />
+        </RadzenStack>
+
+        <RadzenButton ButtonType="ButtonType.Submit" Text="Сохранить отзыв" Icon="save" ButtonStyle="ButtonStyle.Success" style="width: 200px;" />
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    private Review newReview = new();
+
+    private void OnUploadComplete(UploadCompleteEventArgs args)
+    {
+        try
+        {
+            if (args.JsonResponse.RootElement.TryGetProperty("Url", out var urlElement))
+            {
+                newReview.ImageUrl = urlElement.GetString() ?? "";
+            }
+            else if (args.JsonResponse.RootElement.TryGetProperty("url", out var lowerUrlElement))
+            {
+                newReview.ImageUrl = lowerUrlElement.GetString() ?? "";
+            }
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка парсинга картинки: {ex.Message}");
+        }
+    }
+
+    private async Task OnSubmit(Review review)
+    {
+
+
+        DbContext.Reviews.Add(review);
+        await DbContext.SaveChangesAsync();
+        NavManager.NavigateTo("/admin/reviews");
+    }
+}

@@ -1,0 +1,106 @@
+﻿@rendermode InteractiveServer
+@inject NavigationManager NavManager
+@implements IDisposable
+
+<header>
+    <nav class="navbar">
+        <a href="/" class="logo">
+            <i class="fa-solid fa-shapes"></i> Елена Тимофеева
+        </a>
+
+        <button class="tool-btn burger-btn" @onclick="ToggleMenu" aria-label="Открыть меню">
+            <i class="fa-solid @(isMenuOpen ? "fa-xmark" : "fa-bars-staggered")"></i>
+        </button>
+
+        <ul class="nav-links @(isMenuOpen ? "active" : "")">
+            <li><a href="/" class="@GetActive("/")" @onclick="CloseMenu">Главная</a></li>
+            <li><a href="/about" class="@GetActive("/about")" @onclick="CloseMenu">О себе</a></li>
+            <li><a href="/reviews" class="@GetActive("/reviews")" @onclick="CloseMenu">Отзывы</a></li>
+            <li><a href="/blog" class="@GetActive("/blog")" @onclick="CloseMenu">Блог</a></li>
+            
+            <li class="mobile-only-cabinet"><a href="/search" class="@GetActive("/search")" @onclick="CloseMenu">Поиск по сайту</a></li>
+            
+            <li><a href="/#contacts" class="@GetActive("/#contacts")" @onclick="CloseMenu">Контакты</a></li>
+            
+            <li style="margin-top: 20px;" class="mobile-only-cabinet">
+                <a href="/admin" class="btn-cabinet" style="display: inline-block;" @onclick="CloseMenu">Кабинет</a>
+            </li>
+        </ul>
+
+        <div class="header-tools">
+            <a href="/search" class="tool-btn desktop-search-btn @GetActive("/search")" aria-label="Поиск по сайту" title="Поиск">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </a>
+
+            <button class="tool-btn" onclick="toggleTheme()" aria-label="Сменить тему">
+                <i class="fa-solid fa-moon" id="themeIcon"></i>
+            </button>
+
+            <button class="tool-btn" onclick="toggleA11yPanel()" aria-label="Версия для слабовидящих" style="font-size: 1.1rem;">
+                <i class="fa-solid fa-eye"></i>
+            </button>
+
+            <a href="/admin" class="btn-cabinet desktop-only">
+                Кабинет
+            </a>
+        </div>
+    </nav>
+</header>
+
+@code {
+    private bool isMenuOpen = false;
+
+    protected override void OnInitialized()
+    {
+        NavManager.LocationChanged += OnLocationChanged;
+    }
+
+    public void Dispose()
+    {
+        NavManager.LocationChanged -= OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void ToggleMenu()
+    {
+        isMenuOpen = !isMenuOpen;
+    }
+
+    private void CloseMenu()
+    {
+        isMenuOpen = false;
+    }
+
+    private string GetActive(string href)
+    {
+        var currentUrl = NavManager.ToBaseRelativePath(NavManager.Uri);
+        
+        var pathWithoutQuery = currentUrl.Split('?')[0].Split('#')[0];
+
+        if (href == "/")
+        {
+            return string.IsNullOrEmpty(pathWithoutQuery) ? "active-link" : "";
+        }
+
+        if (href.Contains("#"))
+        {
+            var hash = href.Substring(href.IndexOf('#'));
+            return currentUrl.Contains(hash) ? "active-link" : "";
+        }
+
+        var hrefClean = href.TrimStart('/');
+        
+
+        if (pathWithoutQuery.Equals(hrefClean, StringComparison.OrdinalIgnoreCase) ||
+            pathWithoutQuery.StartsWith(hrefClean + "/", StringComparison.OrdinalIgnoreCase))
+        {
+            return "active-link";
+        }
+
+        return "";
+    }
+}

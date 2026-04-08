@@ -1,0 +1,91 @@
+﻿@page "/admin/articles"
+@layout AdminLayout // УКАЗЫВАЕМ, ЧТО ЭТА СТРАНИЦА ИСПОЛЬЗУЕТ АДМИНСКИЙ МАКЕТ
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+@using Blog10.Data
+@using Blog10.Models
+@using Microsoft.EntityFrameworkCore
+@using Radzen
+@using Radzen.Blazor
+@inject AppDbContext DbContext
+@inject NavigationManager NavManager
+@inject DialogService DialogService
+
+<PageTitle>Управление статьями</PageTitle>
+
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-4">
+    <RadzenText TextStyle="TextStyle.H3" TagName="TagName.H1" class="rz-m-0">Статьи блога</RadzenText>
+    <RadzenButton Text="Загрузить из ВК" Icon="cloud_download" ButtonStyle="ButtonStyle.Secondary" Click="@(() => NavManager.NavigateTo("/admin/articles/vk-sync"))" class="rz-ml-2" />
+    <RadzenButton Text="Написать статью" Icon="add_circle" ButtonStyle="ButtonStyle.Primary" Click="@GoToCreate" />
+</RadzenStack>
+
+<RadzenDataGrid @ref="articlesGrid" Data="@articles" TItem="BlogPost" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true">
+    <Columns>
+        <RadzenDataGridColumn TItem="BlogPost" Property="Id" Title="ID" Width="60px" TextAlign="TextAlign.Center" />
+        
+        <RadzenDataGridColumn TItem="BlogPost" Property="Title" Title="Заголовок">
+            <Template Context="post">
+                <strong>@post.Title</strong>
+            </Template>
+        </RadzenDataGridColumn>
+        
+        <RadzenDataGridColumn TItem="BlogPost" Property="CreatedAt" Title="Дата" Width="150px">
+            <Template Context="post">
+                @post.CreatedAt.ToString("dd.MM.yyyy")
+            </Template>
+        </RadzenDataGridColumn>
+        
+        <RadzenDataGridColumn TItem="BlogPost" Property="IsDraft" Title="Статус" Width="120px">
+            <Template Context="post">
+                @if (post.IsDraft)
+                {
+                    <RadzenBadge BadgeStyle="BadgeStyle.Warning" Text="Черновик" />
+                }
+                else
+                {
+                    <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="Опубликована" />
+                }
+            </Template>
+        </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="BlogPost" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Width="120px">
+            <Template Context="post">
+                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium"
+                              Click="@(() => EditPost(post.Id))" class="rz-mr-1" />
+                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium"
+                              Click="@(() => DeletePost(post))" />
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+@code {
+    private List<BlogPost> articles = new List<BlogPost>();
+    
+    private RadzenDataGrid<BlogPost> articlesGrid;
+
+    protected override async Task OnInitializedAsync()
+    {
+        articles = await DbContext.Articles.OrderByDescending(a => a.CreatedAt).ToListAsync();
+    }
+
+    private void GoToCreate() => NavManager.NavigateTo("/admin/articles/create");
+    private void EditPost(int id) => NavManager.NavigateTo($"/admin/articles/edit/{id}");
+
+    private async Task DeletePost(BlogPost post)
+    {
+        var result = await DialogService.Confirm(
+            $"Вы действительно хотите навсегда удалить статью \"{post.Title}\"?",
+            "Подтверждение удаления",
+            new ConfirmOptions() { OkButtonText = "Да, удалить", CancelButtonText = "Отмена" });
+
+        if (result.HasValue && result.Value == true)
+        {
+            DbContext.Articles.Remove(post);
+            await DbContext.SaveChangesAsync();
+            
+            articles.Remove(post);
+            
+            await articlesGrid.Reload();
+        }
+    }
+}

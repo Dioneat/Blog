@@ -1,0 +1,138 @@
+﻿@page "/reviews"
+@using Blog10.Data
+@using Blog10.Models
+@using Microsoft.EntityFrameworkCore
+@inject AppDbContext DbContext
+
+<PageTitle>Отзывы родителей | Елена Тимофеева</PageTitle>
+
+<section class="section" style="padding-top: 120px; min-height: 100vh;">
+    <div class="section-header fade-up">
+        <h1 class="section-title">Истории успеха</h1>
+        <p class="section-subtitle">Реальные отзывы родителей моих учеников. Горжусь каждым результатом и чистым звуком!</p>
+    </div>
+
+    <div class="grid-3">
+        @foreach (var review in reviews)
+        {
+            <div class="card fade-up review-card-flex">
+                @if (!string.IsNullOrEmpty(review.ImageUrl))
+                {
+                    <img src="@review.ImageUrl" alt="Отзыв" class="review-img" onclick="openLightbox(this)" />
+                }
+                
+                <h4 style="margin-bottom: 5px; color: var(--primary-color);">@review.AuthorName</h4>
+                <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 15px;">@review.ChildInfo</p>
+                
+                @if (!string.IsNullOrEmpty(review.Text))
+                {
+                    <p class="review-quote">"@review.Text"</p>
+                }
+            </div>
+        }
+    </div>
+
+    <div style="text-align: center; margin-top: 60px;" class="fade-up">
+        <a href="/#contacts" class="cta-btn">
+            <i class="fa-regular fa-comment-dots"></i> Оставить свой отзыв
+        </a>
+    </div>
+</section>
+
+<div id="review-lightbox" class="lightbox-overlay" style="display:none;">
+    <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+    <a class="lightbox-prev" onclick="changeLightboxImage(-1); event.stopPropagation();">&#10094;</a>
+    <img id="lightbox-img" class="lightbox-content" src="" onclick="event.stopPropagation();" />
+    <a class="lightbox-next" onclick="changeLightboxImage(1); event.stopPropagation();">&#10095;</a>
+</div>
+
+<style>
+    .review-card-flex {
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        text-align: center;
+        height: 100%;
+    }
+    .review-img {
+        width: 100%;
+        height: 250px; 
+        object-fit: cover; 
+        border-radius: 10px;
+        margin-bottom: 15px;
+        box-shadow: var(--shadow-sm);
+        cursor: zoom-in; 
+        transition: var(--transition);
+    }
+    .review-img:hover {
+        transform: scale(1.03);
+        box-shadow: var(--shadow-md);
+    }
+    .review-quote {
+        font-style: italic;
+        margin-top: auto;
+    }
+
+    .lightbox-overlay {
+        position: fixed; z-index: 2000; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.85);
+        display: flex; align-items: center; justify-content: center;
+        backdrop-filter: blur(5px);
+    }
+    .lightbox-content { max-width: 90%; max-height: 85vh; border-radius: 10px; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
+    .lightbox-close { position: absolute; top: 20px; right: 35px; color: white; font-size: 50px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+    .lightbox-close:hover { color: var(--primary-color); }
+    .lightbox-prev, .lightbox-next {
+        cursor: pointer; position: absolute; top: 50%; transform: translateY(-50%);
+        padding: 20px; color: white; font-weight: bold; font-size: 40px; transition: 0.3s; user-select: none;
+    }
+    .lightbox-prev { left: 2%; }
+    .lightbox-next { right: 2%; }
+    .lightbox-prev:hover, .lightbox-next:hover { color: var(--primary-color); background-color: rgba(255,255,255,0.1); border-radius: 10px;}
+    
+    @@media (max-width: 768px) {
+        .lightbox-prev, .lightbox-next { font-size: 25px; padding: 10px; }
+    }
+</style>
+
+<script>
+    let currentImgIndex = 0;
+    let imagesList = [];
+
+    function openLightbox(imgElement) {
+        imagesList = Array.from(document.querySelectorAll('.review-img'));
+        currentImgIndex = imagesList.indexOf(imgElement);
+        
+        document.getElementById('lightbox-img').src = imagesList[currentImgIndex].src;
+        document.getElementById('review-lightbox').style.display = 'flex';
+        document.body.style.overflow = 'hidden'; 
+    }
+
+    function closeLightbox() {
+        document.getElementById('review-lightbox').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+    function changeLightboxImage(step) {
+        currentImgIndex += step;
+        if (currentImgIndex >= imagesList.length) currentImgIndex = 0; 
+        if (currentImgIndex < 0) currentImgIndex = imagesList.length - 1; 
+        document.getElementById('lightbox-img').src = imagesList[currentImgIndex].src;
+    }
+
+    document.getElementById('review-lightbox').addEventListener('click', function(e) {
+        if (e.target === this) closeLightbox();
+    });
+</script>
+
+@code {
+    private List<Review> reviews = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        reviews = await DbContext.Reviews
+            .Where(r => !r.IsDraft)
+            .OrderByDescending(r => r.CreatedAt)
+            .ToListAsync();
+    }
+}

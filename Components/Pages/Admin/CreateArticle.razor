@@ -1,0 +1,307 @@
+﻿@page "/admin/articles/create"
+@layout AdminLayout
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inject Blog10.Services.VkSyncService VkService
+@implements IDisposable
+@using System.Text.Json
+@using System.Timers
+@inject Blog10.Services.TelegramSyncService TgService
+@using Blog10.Utils
+@using Radzen
+@using Radzen.Blazor
+@using Blog10.Models
+@using Blog10.Data
+@using Microsoft.EntityFrameworkCore
+
+@inject NotificationService Notification
+@inject AppDbContext DbContext
+@inject NavigationManager NavManager
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Написать статью</PageTitle>
+
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" class="rz-mb-4">
+    <RadzenButton Icon="arrow_back" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Click="@(() => NavManager.NavigateTo("/admin/articles"))" />
+    <RadzenText TextStyle="TextStyle.H3" TagName="TagName.H1" class="rz-m-0">Новая статья</RadzenText>
+</RadzenStack>
+
+<RadzenTemplateForm TItem="BlogPost" Data="@newPost" Submit="OnSubmit">
+    <RadzenStack Gap="1.5rem">
+        <RadzenFormField Text="Заголовок статьи">
+            <RadzenTextBox @bind-Value="newPost.Title" Name="Title" style="width: 100%;" />
+            <RadzenRequiredValidator Component="Title" Text="Заголовок обязателен" />
+        </RadzenFormField>
+
+        <RadzenFormField Text="Краткое описание (для карточки на главной)">
+            <RadzenTextArea @bind-Value="newPost.ShortDescription" style="width: 100%;" Rows="3" />
+        </RadzenFormField>
+
+        <RadzenStack Gap="0.5rem">
+            <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3" class="rz-m-0">Титульное изображение (Обложка)</RadzenText>
+            
+            <RadzenUpload Url="api/upload/image" Accept="image/*" Complete="@OnUploadComplete" style="width: 100%;" ChooseText="Выбрать файл..." />
+            
+            @if (!string.IsNullOrEmpty(newPost.CoverImageUrl))
+            {
+                <div style="margin-top: 10px;">
+                    <img src="@newPost.CoverImageUrl" alt="Предпросмотр обложки" style="max-width: 300px; border-radius: 8px; border: 1px solid var(--rz-secondary-light);" />
+                </div>
+            }
+        </RadzenStack>
+
+        @* БЛОК АУДИО *@
+        <RadzenStack Gap="1rem" class="rz-p-4 rz-background-color-warning-lighter rz-border-radius-2">
+            <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Аудио-вставка</RadzenText>
+            <RadzenUpload Url="api/upload/audio" Accept="audio/*" Complete=@OnAudioUploadComplete ChooseText="Загрузить Аудио" style="width: 100%;" />
+            @if (!string.IsNullOrEmpty(newPost.MainAudioUrl))
+            {
+                <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-color); padding: 15px; border-radius: 8px; border: 1px solid var(--rz-warning);">
+                    <div style="display: flex; align-items: center; gap: 10px; color: var(--rz-warning-dark);">
+                        <i class="fa-solid fa-headphones" style="font-size: 1.5rem;"></i>
+                        <audio controls src="@newPost.MainAudioUrl" style="height: 30px;"></audio>
+                    </div>
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Text" Click="@(() => newPost.MainAudioUrl = null)" title="Открепить" />
+                </div>
+            }
+        </RadzenStack>
+
+        <RadzenStack Gap="1rem" class="rz-p-4 rz-background-color-success-lighter rz-border-radius-2">
+            <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Видео-вставка</RadzenText>
+            <RadzenUpload Url="api/upload/video" Accept="video/*" Complete=@OnVideoUploadComplete ChooseText="Загрузить Видео" style="width: 100%;" />
+            @if (!string.IsNullOrEmpty(newPost.MainVideoUrl))
+            {
+                <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-color); padding: 15px; border-radius: 8px; border: 1px solid var(--rz-success);">
+                    <div style="display: flex; align-items: center; gap: 10px; color: var(--rz-success-dark);">
+                        <i class="fa-solid fa-video" style="font-size: 1.5rem;"></i>
+                        <RadzenText TextStyle="TextStyle.Body2" class="rz-m-0">Видео прикреплено</RadzenText>
+                    </div>
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Text" Click="@(() => newPost.MainVideoUrl = null)" title="Открепить" />
+                </div>
+            }
+        </RadzenStack>
+
+        <RadzenStack Gap="1rem" class="rz-p-4 rz-background-color-info-lighter rz-border-radius-2">
+            <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Прикрепить полезный материал (PDF)</RadzenText>
+            <RadzenFormField Text="Название файла для пользователя" style="width: 100%;">
+                <RadzenTextBox @bind-Value="newPost.FileAttachmentName" Placeholder="Например: Памятка по артикуляции" style="width: 100%;" />
+            </RadzenFormField>
+            <RadzenUpload Url="api/upload/document" Accept="application/pdf" Complete=@OnDocumentUploadComplete ChooseText="Выбрать PDF-файл" style="width: 100%;" />
+            @if (!string.IsNullOrEmpty(newPost.FileAttachmentUrl))
+            {
+                <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-color); padding: 15px; border-radius: 8px; border: 1px solid var(--rz-success); margin-top: 10px;">
+                    <div style="display: flex; align-items: center; gap: 10px; color: var(--rz-success);">
+                        <i class="fa-solid fa-file-pdf" style="font-size: 1.5rem;"></i>
+                        <div>
+                            <RadzenText TextStyle="TextStyle.Body2" class="rz-m-0">Текущий файл: <strong>@(string.IsNullOrEmpty(newPost.FileAttachmentName) ? "Прикрепленный документ" : newPost.FileAttachmentName)</strong></RadzenText>
+                        </div>
+                    </div>
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Text" Click="@(() => newPost.FileAttachmentUrl = null)" title="Открепить файл" />
+                </div>
+            }
+        </RadzenStack>
+
+        <div class="row">
+            <div class="col-12 col-md-6 rz-mb-4 rz-mb-md-0">
+                <RadzenFormField Text="Категории статьи" style="width: 100%;">
+                    <RadzenDropDown @bind-Value="newPost.Tags" Data="@availableTags" Multiple="true" AllowClear="true" Placeholder="Выберите одну или несколько..." Chips="true" style="width: 100%;" />
+                </RadzenFormField>
+            </div>
+            <div class="col-12 col-md-6">
+                <RadzenFormField Text="Дата и время публикации" style="width: 100%;">
+                    <RadzenDatePicker @bind-Value="newPost.CreatedAt" ShowTime="true" ShowSeconds="false" DateFormat="dd.MM.yyyy HH:mm" style="width: 100%;" />
+                </RadzenFormField>
+            </div>
+        </div>
+
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Текст статьи</RadzenText>
+        <RadzenHtmlEditor @bind-Value="newPost.Content" style="height: 500px;" UploadUrl="api/upload/image">
+            <RadzenHtmlEditorUndo /><RadzenHtmlEditorRedo /><RadzenHtmlEditorSeparator />
+            <RadzenHtmlEditorBold /><RadzenHtmlEditorItalic /><RadzenHtmlEditorUnderline /><RadzenHtmlEditorSeparator />
+            <RadzenHtmlEditorAlignLeft /><RadzenHtmlEditorAlignCenter /><RadzenHtmlEditorAlignRight /><RadzenHtmlEditorSeparator />
+            <RadzenHtmlEditorFormatBlock /><RadzenHtmlEditorFontSize />
+            <RadzenHtmlEditorImage /><RadzenHtmlEditorLink /><RadzenHtmlEditorSource />
+        </RadzenHtmlEditor>
+
+        <div class="rz-p-4 rz-mt-4" style="background: var(--rz-secondary-lighter); border-radius: 12px; border: 1px solid var(--rz-secondary-light);">
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" Wrap="FlexWrap.Wrap" Gap="1rem">
+                
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem" Wrap="FlexWrap.Wrap">
+                    
+                    <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Large" Icon="save" Text="Сохранить" ButtonStyle="ButtonStyle.Success" />
+                    
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" class="rz-p-2 rz-px-3" style="background: white; border-radius: 8px; border: 2px solid var(--rz-warning);">
+                        <RadzenSwitch @bind-Value="newPost.IsDraft" Name="IsDraft" />
+                        <RadzenLabel Text="Черновик" Component="IsDraft" style="margin-left: 10px; font-weight: 700; cursor: pointer; color: var(--text-color);" />
+                    </RadzenStack>
+
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" class="rz-p-2 rz-px-3" style="background: #e5f0fa; border-radius: 8px; border: 2px solid #0077ff;">
+                        <RadzenSwitch @bind-Value="postToVk" Name="PostToVk" />
+                        <RadzenLabel Text="VK" Component="PostToVk" style="margin-left: 10px; font-weight: 700; cursor: pointer; color: #0077ff;" />
+                        <i class="fa-brands fa-vk" style="margin-left: 8px; color: #0077ff; font-size: 1.2rem;"></i>
+                    </RadzenStack>
+
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" class="rz-p-2 rz-px-3" style="background: #e6f5ff; border-radius: 8px; border: 2px solid #0088cc;">
+                        <RadzenSwitch @bind-Value="postToTg" Name="PostToTg" />
+                        <RadzenLabel Text="Telegram" Component="PostToTg" style="margin-left: 10px; font-weight: 700; cursor: pointer; color: #0088cc;" />
+                        <i class="fa-brands fa-telegram" style="margin-left: 8px; color: #0088cc; font-size: 1.2rem;"></i>
+                    </RadzenStack>
+
+                </RadzenStack>
+
+                @if (lastSavedTime.HasValue)
+                {
+                    <span style="color: var(--text-secondary); font-size: 0.95rem; font-weight: 600; white-space: nowrap;">
+                        <i class="fa-solid fa-cloud-arrow-up" style="color: var(--rz-success);"></i> Автосохранение: @lastSavedTime.Value.ToString("HH:mm:ss")
+                    </span>
+                }
+            </RadzenStack>
+        </div>
+
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    private bool postToTg = false; 
+    private bool postToVk = false;
+    private BlogPost newPost = new BlogPost();
+    private List<string> availableTags = new();
+
+    private Timer? autoSaveTimer;
+    private DateTime? lastSavedTime;
+    private const string StorageKey = "article_draft_create";
+
+    protected override async Task OnInitializedAsync()
+    {
+        availableTags = await DbContext.Categories.Select(c => c.Name).ToListAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var savedDraftJson = await JSRuntime.InvokeAsync<string>("localStorage.getItem", StorageKey);
+            if (!string.IsNullOrEmpty(savedDraftJson))
+            {
+                bool restore = await JSRuntime.InvokeAsync<bool>("confirm", "У вас есть несохраненный черновик новой статьи. Хотите его восстановить?");
+                if (restore)
+                {
+                    try
+                    {
+                        var draft = JsonSerializer.Deserialize<BlogPost>(savedDraftJson);
+                        if (draft != null) { newPost = draft; StateHasChanged(); Notification.Notify(NotificationSeverity.Info, "Восстановлено", "Черновик загружен"); }
+                    }
+                    catch { }
+                }
+                else
+                {
+                    await JSRuntime.InvokeVoidAsync("localStorage.removeItem", StorageKey);
+                }
+            }
+
+            autoSaveTimer = new Timer(15000);
+            autoSaveTimer.Elapsed += async (sender, e) =>
+            {
+                await InvokeAsync(async () =>
+                {
+                    if (!string.IsNullOrWhiteSpace(newPost.Title) || !string.IsNullOrWhiteSpace(newPost.Content))
+                    {
+                        var json = JsonSerializer.Serialize(newPost);
+                        await JSRuntime.InvokeVoidAsync("localStorage.setItem", StorageKey, json);
+                        lastSavedTime = DateTime.Now;
+                        StateHasChanged();
+                    }
+                });
+            };
+            autoSaveTimer.Start();
+        }
+    }
+
+    private async Task OnSubmit(BlogPost post)
+    {
+        if (string.IsNullOrWhiteSpace(post.Slug)) post.Slug = SlugGenerator.Generate(post.Title);
+
+        DbContext.Articles.Add(post);
+        await DbContext.SaveChangesAsync();
+        await JSRuntime.InvokeVoidAsync("localStorage.removeItem", StorageKey);
+        
+        string baseUrl = NavManager.BaseUri.TrimEnd('/');
+        string articleUrl = $"{baseUrl}/blog/{post.Id}/{post.Slug}";
+
+        bool vkSuccess = true;
+        bool tgSuccess = true;
+
+        if (postToVk && !post.IsDraft)
+        {
+            var vkResult = await VkService.PublishToVkAsync(post.Title, post.ShortDescription ?? "", articleUrl);
+            if (!vkResult.Success) { vkSuccess = false; Notification.Notify(NotificationSeverity.Error, "Ошибка ВК", vkResult.Message); }
+        }
+
+        if (postToTg && !post.IsDraft)
+        {
+            var tgResult = await TgService.PublishToTelegramAsync(post.Title, post.ShortDescription ?? "", articleUrl);
+            if (!tgResult.Success) { tgSuccess = false; Notification.Notify(NotificationSeverity.Error, "Ошибка Telegram", tgResult.Message); }
+        }
+
+        // Итоговое уведомление
+        if ((postToVk || postToTg) && !post.IsDraft && vkSuccess && tgSuccess)
+        {
+            Notification.Notify(NotificationSeverity.Success, "Успех!", "Статья сохранена на сайте и отправлена в соцсети!");
+        }
+        else if (!postToVk && !postToTg)
+        {
+            Notification.Notify(NotificationSeverity.Success, "Успех", "Статья сохранена на сайте.");
+        }
+
+        NavManager.NavigateTo("/admin/articles");
+    }
+    public void Dispose()
+    {
+        autoSaveTimer?.Dispose();
+    }
+
+    private void OnUploadComplete(UploadCompleteEventArgs args)
+    {
+        try
+        {
+            if (args.JsonResponse.RootElement.TryGetProperty("Url", out var urlElement)) newPost.CoverImageUrl = urlElement.GetString() ?? string.Empty;
+            else if (args.JsonResponse.RootElement.TryGetProperty("url", out var lowerUrlElement)) newPost.CoverImageUrl = lowerUrlElement.GetString() ?? string.Empty;
+        }
+        catch { }
+    }
+
+    private void OnAudioUploadComplete(UploadCompleteEventArgs args)
+    {
+        try
+        {
+            string? uploadedUrl = null;
+            if (args.JsonResponse.RootElement.TryGetProperty("Url", out var urlElement)) uploadedUrl = urlElement.GetString();
+            else if (args.JsonResponse.RootElement.TryGetProperty("url", out var lowerUrlElement)) uploadedUrl = lowerUrlElement.GetString();
+            if (!string.IsNullOrEmpty(uploadedUrl)) { newPost.MainAudioUrl = uploadedUrl; Notification.Notify(NotificationSeverity.Success, "Аудио загружено"); }
+        }
+        catch (Exception ex) { Notification.Notify(NotificationSeverity.Error, "Ошибка загрузки", ex.Message); }
+    }
+
+    private void OnVideoUploadComplete(UploadCompleteEventArgs args)
+    {
+        try
+        {
+            string? uploadedUrl = null;
+            if (args.JsonResponse.RootElement.TryGetProperty("Url", out var urlElement)) uploadedUrl = urlElement.GetString();
+            else if (args.JsonResponse.RootElement.TryGetProperty("url", out var lowerUrlElement)) uploadedUrl = lowerUrlElement.GetString();
+            if (!string.IsNullOrEmpty(uploadedUrl)) { newPost.MainVideoUrl = uploadedUrl; Notification.Notify(NotificationSeverity.Success, "Видео загружено"); }
+        }
+        catch (Exception ex) { Notification.Notify(NotificationSeverity.Error, "Ошибка загрузки", ex.Message); }
+    }
+
+    private void OnDocumentUploadComplete(UploadCompleteEventArgs args)
+    {
+        try
+        {
+            string? uploadedUrl = null;
+            if (args.JsonResponse.RootElement.TryGetProperty("Url", out var urlElement)) uploadedUrl = urlElement.GetString();
+            else if (args.JsonResponse.RootElement.TryGetProperty("url", out var lowerUrlElement)) uploadedUrl = lowerUrlElement.GetString();
+            if (!string.IsNullOrEmpty(uploadedUrl)) { newPost.FileAttachmentUrl = uploadedUrl; Notification.Notify(NotificationSeverity.Success, "Успех", "Файл прикреплен!"); }
+        }
+        catch (Exception ex) { Notification.Notify(NotificationSeverity.Error, "Ошибка", ex.Message); }
+    }
+}

@@ -1,0 +1,170 @@
+﻿@page "/admin/system"
+@layout AdminLayout
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+@using Blog10.Data
+@using Blog10.Models
+@using Microsoft.EntityFrameworkCore
+@using System.Diagnostics
+@using Radzen
+@using Radzen.Blazor
+
+@inject AppDbContext DbContext
+@inject NavigationManager NavManager
+
+<PageTitle>Состояние системы</PageTitle>
+
+<RadzenText TextStyle="TextStyle.H3" TagName="TagName.H1" class="rz-mb-4">Состояние системы</RadzenText>
+
+@* --- ВЕРХНЯЯ ПАНЕЛЬ: МЕТРИКИ СЕРВЕРА --- *@
+<div class="row rz-mb-4">
+    <div class="col-md-3">
+        <RadzenCard class="rz-p-4 rz-text-align-center" style="border-bottom: 4px solid var(--rz-primary);">
+            <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-color-secondary">Использование ОЗУ</RadzenText>
+            <RadzenText TextStyle="TextStyle.H4" class="rz-m-0">
+                <i class="fa-solid fa-memory rz-mr-2" style="color: var(--rz-primary);"></i> @memoryUsage MB
+            </RadzenText>
+        </RadzenCard>
+    </div>
+    <div class="col-md-3">
+        <RadzenCard class="rz-p-4 rz-text-align-center" style="border-bottom: 4px solid var(--rz-info);">
+            <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-color-secondary">Аптайм (Без перезагрузок)</RadzenText>
+            <RadzenText TextStyle="TextStyle.H4" class="rz-m-0">
+                <i class="fa-solid fa-server rz-mr-2" style="color: var(--rz-info);"></i> @uptime
+            </RadzenText>
+        </RadzenCard>
+    </div>
+    <div class="col-md-3">
+        <RadzenCard class="rz-p-4 rz-text-align-center" style="border-bottom: 4px solid var(--rz-success);">
+            <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-color-secondary">Всего логов</RadzenText>
+            <RadzenText TextStyle="TextStyle.H4" class="rz-m-0">
+                <i class="fa-solid fa-list rz-mr-2" style="color: var(--rz-success);"></i> @totalLogs
+            </RadzenText>
+        </RadzenCard>
+    </div>
+    <div class="col-md-3">
+        <RadzenCard class="rz-p-4 rz-text-align-center" style="border-bottom: 4px solid var(--rz-danger);">
+            <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-color-secondary">Ошибок (Error)</RadzenText>
+            <RadzenText TextStyle="TextStyle.H4" class="rz-m-0">
+                <i class="fa-solid fa-triangle-exclamation rz-mr-2" style="color: var(--rz-danger);"></i> @errorCount
+            </RadzenText>
+        </RadzenCard>
+    </div>
+</div>
+
+@* --- КНОПКИ УПРАВЛЕНИЯ --- *@
+<RadzenStack Orientation="Orientation.Horizontal" class="rz-mb-4">
+    <RadzenButton Text="Обновить данные" Icon="refresh" Click="LoadData" ButtonStyle="ButtonStyle.Primary" />
+    <RadzenButton Text="Очистить логи" Icon="delete_sweep" Click="ClearLogs" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" />
+</RadzenStack>
+
+@* --- ТАБЛИЦА ЛОГОВ --- *@
+<RadzenDataGrid @ref="logsGrid" Data="@logs" TItem="SystemLog" AllowPaging="true" PageSize="15" AllowSorting="true" AllowFiltering="true">
+    <Columns>
+        <RadzenDataGridColumn TItem="SystemLog" Property="CreatedAt" Title="Время" Width="160px">
+            <Template Context="log">
+                @log.CreatedAt.ToString("dd.MM.yyyy HH:mm:ss")
+            </Template>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn TItem="SystemLog" Property="Level" Title="Уровень" Width="120px" TextAlign="TextAlign.Center">
+            <Template Context="log">
+                @if (log.Level == "Error")
+                {
+                    <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Ошибка" />
+                }
+                else if (log.Level == "Warning")
+                {
+                    <RadzenBadge BadgeStyle="BadgeStyle.Warning" Text="Внимание" />
+                }
+                else
+                {
+                    <RadzenBadge BadgeStyle="BadgeStyle.Info" Text="Инфо" />
+                }
+            </Template>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn TItem="SystemLog" Property="Source" Title="Источник" Width="150px">
+            <Template Context="log">
+                <strong>@log.Source</strong>
+            </Template>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn TItem="SystemLog" Property="Message" Title="Сообщение" />
+
+        <RadzenDataGridColumn TItem="SystemLog" Title="Детали" Width="100px" TextAlign="TextAlign.Center" Filterable="false" Sortable="false">
+            <Template Context="log">
+                @if (!string.IsNullOrEmpty(log.ExceptionDetails))
+                {
+                    <RadzenButton Icon="code" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                                  Click="@(() => ShowDetails(log))" title="Посмотреть StackTrace" />
+                }
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+@* Модальное окно для деталей ошибки *@
+@if (selectedLog != null)
+{
+    <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header rz-background-color-danger-lighter">
+                    <h5 class="modal-title"><i class="fa-solid fa-bug"></i> Детали ошибки</h5>
+                    <button type="button" class="btn-close" @onclick="() => selectedLog = null"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Источник:</strong> @selectedLog.Source</p>
+                    <p><strong>Сообщение:</strong> @selectedLog.Message</p>
+                    <hr />
+                    <pre style="background: #f4f4f4; padding: 15px; border-radius: 5px; font-size: 0.85rem; max-height: 400px; overflow-y: auto;">@selectedLog.ExceptionDetails</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<SystemLog> logs = new();
+    private RadzenDataGrid<SystemLog>? logsGrid;
+    private SystemLog? selectedLog;
+
+    // Метрики
+    private string memoryUsage = "0";
+    private string uptime = "0ч 0м";
+    private int totalLogs = 0;
+    private int errorCount = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        logs = await DbContext.SystemLogs.OrderByDescending(l => l.CreatedAt).ToListAsync();
+        totalLogs = logs.Count;
+        errorCount = logs.Count(l => l.Level == "Error");
+
+        var process = Process.GetCurrentProcess();
+        memoryUsage = (process.WorkingSet64 / (1024 * 1024)).ToString(); 
+        
+        var timeSpan = DateTime.Now - process.StartTime;
+        uptime = $"{(int)timeSpan.TotalHours}ч {timeSpan.Minutes}м";
+
+        if (logsGrid != null) await logsGrid.Reload();
+    }
+
+    private void ShowDetails(SystemLog log)
+    {
+        selectedLog = log;
+    }
+
+    private async Task ClearLogs()
+    {
+        DbContext.SystemLogs.RemoveRange(DbContext.SystemLogs);
+        await DbContext.SaveChangesAsync();
+        await LoadData();
+    }
+}

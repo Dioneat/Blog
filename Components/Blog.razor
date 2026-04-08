@@ -1,0 +1,255 @@
+﻿@page "/blog"
+@using Blog10.Models
+@using Blog10.Services
+@inject NavigationManager NavManager
+@rendermode InteractiveServer
+
+@inject IBlogService BlogService
+
+<PageTitle>Блог логопеда</PageTitle>
+
+<section class="section" style="padding-top: 120px; min-height: 100vh;">
+    <div class="container">
+        <div class="section-header fade-up">
+            <h1 class="section-title">Все статьи</h1>
+        </div>
+
+        @if (allCategories.Any())
+        {
+            <div class="category-filters fade-up">
+                <button class="filter-btn @(string.IsNullOrEmpty(Category) ? "active" : "")" @onclick="() => SelectCategory(null)">Все статьи</button>
+                @foreach (var cat in allCategories)
+                {
+                    <button class="filter-btn @(Category == cat ? "active" : "")" @onclick="() => SelectCategory(cat)">@cat</button>
+                }
+            </div>
+        }
+
+        <div class="grid-3">
+            @if (filteredPosts.Any())
+            {
+                @foreach (var post in filteredPosts.Take(visibleCount))
+                {
+                    <div class="card blog-card fade-up">
+                        <div class="blog-thumb">
+                            @if (!string.IsNullOrEmpty(post.CoverImageUrl))
+                            {
+                                <img src="@post.CoverImageUrl" alt="@post.Title">
+                            }
+                            else
+                            {
+                                <div class="blog-placeholder">
+                                    <i class="fa-solid fa-shapes placeholder-icon"></i>
+                                    <span class="placeholder-text">Статья</span>
+                                </div>
+                            }
+                        
+                            @if (post.Tags != null && post.Tags.Any())
+                            {
+                                <div class="blog-card-tags">
+                                    @foreach (var tag in post.Tags.Take(3))
+                                    {
+                                        <span class="blog-card-tag">@tag</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                        <div class="blog-content">
+                            <div class="blog-meta">
+                                <span><i class="fa-regular fa-calendar"></i> @post.CreatedAt.ToString("dd MMM yyyy")</span>
+                                <span><i class="fa-regular fa-clock"></i> ~@post.ReadTime мин.</span>
+                            </div>
+                            <h3 style="margin-bottom: 10px;">@post.Title</h3>
+                            <p style="color: var(--text-secondary); margin-bottom: 20px;">@post.ShortDescription</p>
+                            <button @onclick="() => GoToArticle(post)" class="blog-link" style="background: none; border: none; cursor: pointer; padding: 0;">
+                                Читать статью <i class="fa-solid fa-arrow-right-long"></i>
+                            </button>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div style="grid-column: 1 / -1; text-align: center; padding: 50px 0;" class="fade-up">
+                    <i class="fa-regular fa-folder-open" style="font-size: 4rem; color: var(--accent-light); margin-bottom: 20px;"></i>
+                    <h3 style="color: var(--text-secondary);">В этой категории пока нет статей</h3>
+                    <button class="cta-btn" style="margin-top: 20px;" @onclick="() => SelectCategory(null)">Показать все</button>
+                </div>
+            }
+        </div>
+
+        @if (filteredPosts.Any() && visibleCount < filteredPosts.Count)
+        {
+            <div class="load-more-container fade-up">
+                <button class="cta-btn outline" @onclick="LoadMore">
+                    <i class="fa-solid fa-rotate-right"></i> Загрузить еще
+                </button>
+                <div class="load-more-info">
+                    Показано @Math.Min(visibleCount, filteredPosts.Count) из @filteredPosts.Count
+                </div>
+            </div>
+        }
+
+    </div>
+</section>
+
+<style>
+    
+    .category-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: center;
+        margin-bottom: 50px;
+    }
+
+    .filter-btn {
+        background: var(--card-bg);
+        border: 2px solid var(--accent-light);
+        color: var(--text-secondary);
+        padding: 8px 22px;
+        border-radius: 50px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: var(--transition);
+        font-size: 0.95rem;
+    }
+
+        .filter-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .filter-btn.active {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+            box-shadow: var(--shadow-sm);
+        }
+
+    .blog-card-tags {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        z-index: 2;
+    }
+
+    .blog-card-tag {
+        background: rgba(255, 255, 255, 0.95);
+        color: var(--primary-color);
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 800;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        backdrop-filter: blur(4px);
+    }
+
+    .load-more-container {
+        text-align: center;
+        margin-top: 50px;
+        padding-top: 20px;
+    }
+
+        .load-more-container .outline {
+            background: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+            .load-more-container .outline:hover {
+                background: var(--primary-color);
+                color: white;
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(27, 84, 245, 0.2);
+            }
+
+    .load-more-info {
+        margin-top: 15px;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+</style>
+
+@code {
+    [SupplyParameterFromQuery]
+    public string? Category { get; set; }
+
+    private List<BlogPost> allPosts = new();
+    private List<BlogPost> filteredPosts = new();
+    private List<string> allCategories = new();
+
+    private int pageSize = 6;
+    private int visibleCount = 6;
+
+    protected override async Task OnInitializedAsync()
+    {
+        allPosts = await BlogService.GetPublishedPostsAsync();
+        
+        allCategories = allPosts
+            .Where(p => p.Tags != null)
+            .SelectMany(p => p.Tags)
+            .Where(t => !string.IsNullOrWhiteSpace(t))
+            .Distinct()
+            .OrderBy(t => t)
+            .ToList();
+            
+        ApplyFilter();
+    }
+
+    protected override void OnParametersSet()
+    {
+        ApplyFilter();
+    }
+
+    private void ApplyFilter()
+    {
+        if (string.IsNullOrWhiteSpace(Category))
+        {
+            filteredPosts = allPosts;
+        }
+        else
+        {
+            filteredPosts = allPosts
+                .Where(p => p.Tags != null && p.Tags.Contains(Category, StringComparer.OrdinalIgnoreCase))
+                .ToList();
+        }
+        
+        visibleCount = pageSize;
+    }
+
+    private void LoadMore()
+    {
+        visibleCount += pageSize;
+    }
+
+    private void SelectCategory(string? category)
+    {
+        if (string.IsNullOrEmpty(category))
+            NavManager.NavigateTo("/blog");
+        else
+            NavManager.NavigateTo($"/blog?Category={Uri.EscapeDataString(category)}");
+    }
+
+    private void GoToArticle(BlogPost post)
+    {
+        string url = string.IsNullOrWhiteSpace(post.Slug)
+            ? $"/blog/{post.Id}"
+            : $"/blog/{post.Id}/{post.Slug}";
+            
+        NavManager.NavigateTo(url, forceLoad: true);
+    }
+}

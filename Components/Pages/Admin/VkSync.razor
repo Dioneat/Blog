@@ -1,0 +1,78 @@
+﻿@page "/admin/articles/vk-sync"
+@layout AdminLayout
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+@using Blog10.Services
+@using Radzen
+@using Radzen.Blazor
+
+@inject VkSyncService SyncService
+@inject NotificationService Notification
+@inject NavigationManager NavManager
+
+<PageTitle>Синхронизация с ВК</PageTitle>
+
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" class="rz-mb-4">
+    <RadzenButton Icon="arrow_back" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Click="@(() => NavManager.NavigateTo("/admin/articles"))" />
+    <RadzenText TextStyle="TextStyle.H3" TagName="TagName.H1" class="rz-m-0">Кросспостинг ВКонтакте</RadzenText>
+</RadzenStack>
+
+<RadzenCard class="rz-p-4 rz-mt-4" style="max-width: 600px;">
+    <RadzenText TextStyle="TextStyle.Subtitle1" class="rz-mb-4">
+        Нажмите кнопку ниже, чтобы загрузить последние посты из вашей группы ВК.
+        <br /><br />
+        <b>Как это работает:</b>
+        <ul>
+            <li>Система проверит 10 последних постов на стене.</li>
+            <li>Если поста еще нет на сайте, он будет скопирован.</li>
+            <li>Картинка поста станет обложкой статьи.</li>
+            <li>Все новые посты сохраняются как <b>Черновики</b>. Вы сможете отредактировать заголовок и опубликовать их в разделе "Статьи".</li>
+        </ul>
+    </RadzenText>
+
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
+        <RadzenNumeric TValue="int" @bind-Value="postsToFetch" Min="1" Max="20" style="width: 100px;" title="Сколько постов проверить" />
+        <span style="color: var(--text-secondary);">последних постов</span>
+    </RadzenStack>
+
+    <RadzenButton Text="Запустить синхронизацию" Icon="sync" ButtonStyle="ButtonStyle.Primary"
+                  IsBusy="@isSyncing" Click="RunSync" class="rz-mt-4" Size="ButtonSize.Large" />
+</RadzenCard>
+
+@if (!string.IsNullOrEmpty(syncResult))
+{
+    <RadzenAlert AlertStyle="@(importedCount > 0 ? AlertStyle.Success : AlertStyle.Info)" ShowIcon="true" class="rz-mt-4" style="max-width: 600px;">
+        @syncResult
+    </RadzenAlert>
+}
+
+@code {
+    private bool isSyncing = false;
+    private int postsToFetch = 5;
+    private string syncResult = "";
+    private int importedCount = 0;
+
+    private async Task RunSync()
+    {
+        isSyncing = true;
+        syncResult = "";
+        StateHasChanged();
+
+        var result = await SyncService.SyncPostsAsync(postsToFetch);
+        
+        importedCount = result.Imported;
+        syncResult = result.Message;
+
+        if (importedCount > 0)
+        {
+            Notification.Notify(NotificationSeverity.Success, "Успех!", result.Message);
+        }
+        else
+        {
+            Notification.Notify(NotificationSeverity.Info, "Готово", result.Message);
+        }
+
+        isSyncing = false;
+        StateHasChanged();
+    }
+}

@@ -1,0 +1,189 @@
+﻿@page "/about"
+@using Blog10.Services
+@inject IAboutService AboutService
+
+<PageTitle>Обо мне | Елена Тимофеева</PageTitle>
+
+@if (data == null) 
+{ 
+    <div style="padding: 150px 20px; text-align: center;">
+        <i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: var(--primary-color);"></i>
+    </div>
+}
+else
+{
+    <section class="about-hero">
+        <div class="container hero-wrapper">
+            <div class="hero-image-box">
+                <div class="image-frame">
+                    <img src="@data.ProfileImageUrl" alt="@data.HeroTitle">
+                </div>
+                <div class="floating-stat">
+                    <i class="fa-solid fa-award"></i>
+                    <span>@data.StatsExperience лет опыта</span>
+                </div>
+            </div>
+            
+            <div class="hero-text-box">
+                <span class="hero-tag">Давайте знакомиться</span>
+                <h1 class="main-title">@data.HeroTitle</h1>
+                <p class="main-subtitle">@data.HeroSubtitle</p>
+                
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="num">@data.StatsExperience</span>
+                        <span class="lab">Лет практики</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="num">@data.StatsChildren</span>
+                        <span class="lab">Выпускников</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="num">@data.StatsCertificates</span>
+                        <span class="lab">Дипломов</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @if (!string.IsNullOrEmpty(data.QuoteText))
+    {
+        <section class="quote-section">
+            <div class="container">
+                <div class="quote-card">
+                    <i class="fa-solid fa-quote-left quote-icon"></i>
+                    <blockquote>@data.QuoteText</blockquote>
+                    <cite>— @data.QuoteAuthor</cite>
+                </div>
+            </div>
+        </section>
+    }
+
+    <section class="bio-section section-bg-secondary">
+        <div class="container bio-grid">
+            <div class="bio-main">
+                <h2 class="section-title">Моя история</h2>
+                <div class="rich-text">
+                    @((MarkupString)data.BioHtml)
+                </div>
+            </div>
+            
+            <div class="bio-sidebar">
+                <div class="sidebar-card">
+                    <h3><i class="fa-solid fa-graduation-cap"></i> Образование</h3>
+                    <div class="rich-text small-text">
+                        @((MarkupString)data.EducationHtml)
+                    </div>
+                </div>
+                
+                <div class="sidebar-card">
+                    <h3><i class="fa-solid fa-heart-circle-check"></i> Принципы работы</h3>
+                    <div class="rich-text small-text">
+                        @((MarkupString)data.PrinciplesHtml)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+
+<style>
+    .about-hero { padding: 140px 20px 80px; overflow: hidden; }
+    .hero-wrapper { 
+        display: flex; 
+        flex-wrap: wrap; 
+        gap: 60px; 
+        align-items: center; 
+        justify-content: space-between; 
+    }
+    .hero-image-box { flex: 1; min-width: 300px; position: relative; display: flex; justify-content: center; }
+    .hero-text-box { flex: 1.2; min-width: 300px; }
+
+    .image-frame {
+        width: 100%;
+        max-width: 450px;
+        aspect-ratio: 4/5;
+        border-radius: 30px;
+        overflow: hidden;
+        box-shadow: var(--shadow-md);
+        border: 8px solid var(--card-bg);
+    }
+    .image-frame img { width: 100%; height: 100%; object-fit: cover; }
+    
+    .floating-stat {
+        position: absolute;
+        bottom: -20px;
+        right: 10%;
+        background: var(--card-bg);
+        padding: 15px 25px;
+        border-radius: 50px;
+        box-shadow: var(--shadow-md);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 700;
+        color: var(--primary-color);
+        animation: float 4s ease-in-out infinite;
+    }
+
+    .hero-tag { color: var(--primary-color); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; display: block; margin-bottom: 10px; }
+    .main-title { font-size: clamp(2.5rem, 5vw, 4rem); line-height: 1.1; margin-bottom: 15px; color: var(--text-color); }
+    .main-subtitle { font-size: 1.2rem; color: var(--text-secondary); margin-bottom: 40px; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 20px; }
+    .stat-item { background: var(--accent-light); padding: 25px 15px; border-radius: 20px; text-align: center; }
+    .stat-item .num { display: block; font-size: 2.5rem; font-weight: 800; color: var(--primary-color); line-height: 1; margin-bottom: 5px; }
+    .stat-item .lab { font-size: 0.9rem; color: var(--text-secondary); font-weight: 600; }
+
+    .quote-section { padding: 40px 20px; }
+    .quote-card {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+        border-radius: 30px;
+        padding: 50px;
+        text-align: center;
+        color: white;
+        position: relative;
+        box-shadow: var(--shadow-md);
+    }
+    .quote-icon { font-size: 3rem; opacity: 0.2; margin-bottom: 20px; }
+    .quote-card blockquote { font-size: clamp(1.2rem, 3vw, 1.8rem); font-weight: 600; line-height: 1.5; margin-bottom: 20px; border: none; padding: 0; }
+    .quote-card cite { font-style: normal; font-size: 1.1rem; opacity: 0.9; }
+
+    .bio-section { padding: 80px 20px; }
+    .bio-grid { display: flex; flex-wrap: wrap; gap: 50px; }
+    .bio-main { flex: 2; min-width: 300px; }
+    .bio-sidebar { flex: 1; min-width: 300px; display: flex; flex-direction: column; gap: 30px; }
+
+    .sidebar-card { background: var(--card-bg); padding: 35px; border-radius: 25px; box-shadow: var(--shadow-sm); border: 1px solid var(--accent-light); }
+    .sidebar-card h3 { color: var(--primary-color); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+
+    .rich-text {
+        color: var(--text-color);
+        line-height: 1.8;
+        font-size: 1.1rem;
+        word-break: break-word;     
+        overflow-wrap: break-word;  
+    }
+    .rich-text img, .rich-text iframe {
+        max-width: 100%;            
+        height: auto;
+        border-radius: 15px;
+        margin: 20px 0;
+    }
+    .rich-text.small-text { font-size: 1rem; }
+    .rich-text ul { padding-left: 20px; margin-bottom: 20px; }
+    .rich-text li { margin-bottom: 10px; }
+
+    @@media (max-width: 968px) {
+        .hero-wrapper { flex-direction: column; text-align: center; }
+        .hero-image-box { order: -1; }
+        .floating-stat { right: 50%; transform: translateX(50%); bottom: -20px; animation: none; }
+        .quote-card { padding: 40px 20px; }
+    }
+</style>
+
+@code {
+    private Blog10.Models.AboutData? data;
+    protected override async Task OnInitializedAsync() => data = await AboutService.GetAboutDataAsync();
+}

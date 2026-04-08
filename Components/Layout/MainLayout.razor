@@ -1,0 +1,14 @@
+﻿@inherits LayoutComponentBase
+@using Radzen.Blazor
+
+<div class="page">
+    <Header />
+
+    <main>
+        @Body
+    </main>
+
+    <Footer />
+</div>
+
+<RadzenComponents @rendermode="@(new InteractiveServerRenderMode(prerender: false))" />

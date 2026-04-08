@@ -1,0 +1,136 @@
+﻿@page "/admin/profile"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+@using Blog10.Services
+@using Blog10.Models
+@using System.IO
+@using Radzen
+@using Radzen.Blazor
+
+@inject IAuthService AuthService
+@inject IAboutService AboutService
+@inject IWebHostEnvironment Environment
+@inject NotificationService Notification
+
+<PageTitle>Настройки профиля</PageTitle>
+
+<div class="row">
+    <div class="col-12 col-xl-6 rz-mb-4">
+        <RadzenText TextStyle="TextStyle.H3" TagName="TagName.H1" class="rz-mb-4">Настройки доступа</RadzenText>
+        <div class="card" style="padding: 30px; border-radius: 15px; border: 1px solid var(--rz-secondary-light); box-shadow: var(--shadow-sm);">
+            
+            @if (isSaved)
+            {
+                <div style="background-color: #e8f5e9; color: #2e7d32; padding: 10px; border-radius: 5px; margin-bottom: 20px; text-align: center;">
+                    <i class="fa-solid fa-check"></i> Данные успешно обновлены!
+                </div>
+            }
+
+            <RadzenTemplateForm TItem="ProfileModel" Data="@profileModel" Submit="OnSubmit">
+                <RadzenStack Gap="1.5rem">
+                    <RadzenFormField Text="Новый логин">
+                        <RadzenTextBox @bind-Value="profileModel.Username" Name="Username" style="width: 100%;" />
+                        <RadzenRequiredValidator Component="Username" Text="Логин обязателен" />
+                    </RadzenFormField>
+
+                    <RadzenFormField Text="Новый пароль">
+                        <RadzenPassword @bind-Value="profileModel.NewPassword" Name="Password" style="width: 100%;" />
+                        <RadzenRequiredValidator Component="Password" Text="Пароль обязателен" />
+                    </RadzenFormField>
+
+                    <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Large" Icon="lock" Text="Обновить доступы" ButtonStyle="ButtonStyle.Success" style="width: 100%;" />
+                </RadzenStack>
+            </RadzenTemplateForm>
+        </div>
+    </div>
+
+    <div class="col-12 col-xl-6 rz-mb-4">
+        <RadzenText TextStyle="TextStyle.H3" TagName="TagName.H1" class="rz-mb-4">Главная страница</RadzenText>
+        <div class="card" style="padding: 30px; border-radius: 15px; border: 1px solid var(--rz-secondary-light); box-shadow: var(--shadow-sm);">
+            
+            @if (aboutData == null)
+            {
+                <RadzenProgressBar Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+            }
+            else
+            {
+                <RadzenStack Gap="1.5rem">
+                    <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-m-0">Фотография для главного экрана (Hero Section)</RadzenText>
+
+                    @if (!string.IsNullOrEmpty(aboutData.MainHeroImageUrl))
+                    {
+                        <img src="@aboutData.MainHeroImageUrl" style="width: 100%; max-height: 250px; object-fit: cover; border-radius: 10px; border: 2px solid var(--accent-light);" />
+                    }
+
+                    <div>
+                        <RadzenText TextStyle="TextStyle.Caption" class="rz-mb-1" style="display:block;">Загрузить новое фото:</RadzenText>
+                        <InputFile OnChange="HandleHeroImageUpload" accept="image/*" class="form-control" />
+                    </div>
+
+                    <RadzenButton Click="SaveHeroImage" Size="ButtonSize.Large" Icon="image" Text="Сохранить фото" ButtonStyle="ButtonStyle.Primary" style="width: 100%;" />
+                </RadzenStack>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    public class ProfileModel
+    {
+        public string Username { get; set; } = "";
+        public string NewPassword { get; set; } = "";
+    }
+
+    private ProfileModel profileModel = new();
+    private bool isSaved = false;
+
+    private AboutData? aboutData;
+
+    protected override async Task OnInitializedAsync()
+    {
+        profileModel.Username = await AuthService.GetAdminUsernameAsync();
+        aboutData = await AboutService.GetAboutDataAsync();
+    }
+
+    private async Task OnSubmit(ProfileModel model)
+    {
+        await AuthService.UpdateAdminPasswordAsync(model.Username, model.NewPassword);
+        isSaved = true;
+        try
+        {
+            await Task.Delay(3000);
+            isSaved = false;
+            await InvokeAsync(StateHasChanged);
+        }
+        catch { }
+    }
+
+    private async Task HandleHeroImageUpload(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null && aboutData != null)
+        {
+            var folderPath = Path.Combine(Environment.WebRootPath, "uploads");
+            Directory.CreateDirectory(folderPath);
+
+            var fileName = $"hero_{Guid.NewGuid()}_{file.Name}";
+            var filePath = Path.Combine(folderPath, fileName);
+
+            using var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+            using var fs = new FileStream(filePath, FileMode.Create);
+            await stream.CopyToAsync(fs);
+
+            aboutData.MainHeroImageUrl = $"/uploads/{fileName}";
+            StateHasChanged();
+        }
+    }
+
+    private async Task SaveHeroImage()
+    {
+        if (aboutData != null)
+        {
+            await AboutService.UpdateAboutDataAsync(aboutData);
+            Notification.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Готово", Detail = "Фото главной страницы обновлено!" });
+        }
+    }
+}
