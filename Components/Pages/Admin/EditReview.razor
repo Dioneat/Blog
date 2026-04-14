@@ -2,12 +2,8 @@
 @layout AdminLayout
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 
-@using Blog10.Data
-@using Blog10.Models
-@using Microsoft.EntityFrameworkCore
-@using Radzen
-@using Radzen.Blazor
-
+@inject Blog10.Services.FileService FileService
+@inject NotificationService Notification
 @inject AppDbContext DbContext
 @inject NavigationManager NavManager
 
@@ -27,38 +23,62 @@ else
     <RadzenTemplateForm TItem="Review" Data="@editReview" Submit="OnSubmit">
         <RadzenStack Gap="1.5rem">
             
-            <RadzenStack Gap="0.5rem">
-                <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3" class="rz-m-0">Скриншот отзыва</RadzenText>
+            @* --- 1. СКРИНШОТ ОТЗЫВА --- *@
+            <RadzenCard class="rz-p-4" style="border-radius: 12px; border-left: 5px solid var(--rz-info);">
+                <RadzenText TextStyle="TextStyle.H6" class="rz-mb-3"><i class="fa-solid fa-image rz-mr-2"></i> Скриншот отзыва</RadzenText>
                 
-                <RadzenUpload Url="api/upload/image" Accept="image/*" Complete="OnUploadComplete" style="width: 100%;" ChooseText="Выбрать другой скриншот..." />
+                <RadzenStack Gap="1rem">
+                    <RadzenUpload Url="api/upload/image" Accept="image/*" Complete="OnUploadComplete" style="width: 100%;" ChooseText="Выбрать другой скриншот..." />
+                    
+                    @if (!string.IsNullOrEmpty(editReview.ImageUrl))
+                    {
+                        <div style="margin-top: 10px;">
+                            <img src="@editReview.ImageUrl" alt="Предпросмотр скриншота" style="max-width: 300px; border-radius: 8px; border: 1px solid var(--rz-secondary-light); box-shadow: var(--shadow-sm);" />
+                        </div>
+                    }
+                </RadzenStack>
+            </RadzenCard>
+
+            @* --- 2. ИНФОРМАЦИЯ ОБ АВТОРЕ --- *@
+            <RadzenCard class="rz-p-4" style="border-radius: 12px; border-left: 5px solid var(--rz-primary);">
+                <RadzenText TextStyle="TextStyle.H6" class="rz-mb-3"><i class="fa-solid fa-user-pen rz-mr-2"></i> Данные автора</RadzenText>
                 
-                @if (!string.IsNullOrEmpty(editReview.ImageUrl))
-                {
-                    <div style="margin-top: 10px;">
-                        <img src="@editReview.ImageUrl" alt="Предпросмотр скриншота" style="max-width: 300px; border-radius: 8px; border: 1px solid var(--rz-secondary-light);" />
+                <div class="row">
+                    <div class="col-12 col-md-6 rz-mb-3 rz-mb-md-0">
+                        <RadzenFormField Text="Имя родителя" style="width: 100%;">
+                            <RadzenTextBox @bind-Value="editReview.AuthorName" Name="Author" />
+                            <RadzenRequiredValidator Component="Author" Text="Укажите имя" />
+                        </RadzenFormField>
                     </div>
-                }
-            </RadzenStack>
+                    <div class="col-12 col-md-6">
+                        <RadzenFormField Text="Информация о ребенке (Мама Оли, 6 лет)" style="width: 100%;">
+                            <RadzenTextBox @bind-Value="editReview.ChildInfo" />
+                        </RadzenFormField>
+                    </div>
+                </div>
+            </RadzenCard>
 
-            <RadzenFormField Text="Имя родителя">
-                <RadzenTextBox @bind-Value="editReview.AuthorName" Name="Author" style="width: 100%;" />
-                <RadzenRequiredValidator Component="Author" Text="Укажите имя" />
-            </RadzenFormField>
+            @* --- 3. ТЕКСТ ОТЗЫВА --- *@
+            <RadzenCard class="rz-p-4" style="border-radius: 12px; border-left: 5px solid var(--rz-success);">
+                <RadzenText TextStyle="TextStyle.H6" class="rz-mb-3"><i class="fa-solid fa-comment-dots rz-mr-2"></i> Текст отзыва</RadzenText>
+                
+                <RadzenFormField Text="Текст отзыва (для описания или дублирования)" style="width: 100%;">
+                    <RadzenTextArea @bind-Value="editReview.Text" Rows="4" />
+                </RadzenFormField>
+            </RadzenCard>
 
-            <RadzenFormField Text="Информация о ребенке (Мама Оли, 6 лет)">
-                <RadzenTextBox @bind-Value="editReview.ChildInfo" style="width: 100%;" />
-            </RadzenFormField>
+            @* --- 4. ПУБЛИКАЦИЯ --- *@
+            <div class="rz-p-4 rz-mt-2" style="background: var(--rz-secondary-lighter); border-radius: 12px; border: 1px solid var(--rz-secondary-light); box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem" Wrap="FlexWrap.Wrap">
+                    <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Large" Icon="save" Text="Обновить отзыв" ButtonStyle="ButtonStyle.Success" />
+                    
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" class="rz-p-2 rz-px-3" style="background: white; border-radius: 8px; border: 2px solid var(--rz-warning);">
+                        <RadzenSwitch @bind-Value="editReview.IsDraft" Name="IsDraft" />
+                        <RadzenLabel Text="Скрыть (Черновик)" Component="IsDraft" style="margin-left: 10px; font-weight: 700; cursor: pointer; color: var(--text-color);" />
+                    </RadzenStack>
+                </RadzenStack>
+            </div>
 
-            <RadzenFormField Text="Текст отзыва (для описания или дублирования)">
-                <RadzenTextArea @bind-Value="editReview.Text" style="width: 100%;" Rows="5" />
-            </RadzenFormField>
-
-            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
-                <RadzenCheckBox @bind-Value="editReview.IsDraft" Name="IsDraft" />
-                <RadzenLabel Text="Скрыть отзыв (черновик)" Component="IsDraft" class="rz-ml-2" />
-            </RadzenStack>
-
-            <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Large" Icon="save" Text="Обновить отзыв" ButtonStyle="ButtonStyle.Success" style="width: 200px;" />
         </RadzenStack>
     </RadzenTemplateForm>
 }
@@ -85,19 +105,21 @@ else
         {
             if (editReview != null)
             {
-                if (args.JsonResponse.RootElement.TryGetProperty("Url", out var urlElement))
+                string? newUrl = null;
+                if (args.JsonResponse.RootElement.TryGetProperty("Url", out var urlElement)) newUrl = urlElement.GetString();
+                else if (args.JsonResponse.RootElement.TryGetProperty("url", out var lowerUrlElement)) newUrl = lowerUrlElement.GetString();
+
+                if (!string.IsNullOrEmpty(newUrl))
                 {
-                    editReview.ImageUrl = urlElement.GetString() ?? string.Empty;
-                }
-                else if (args.JsonResponse.RootElement.TryGetProperty("url", out var lowerUrlElement))
-                {
-                    editReview.ImageUrl = lowerUrlElement.GetString() ?? string.Empty;
+                    FileService.DeleteFile(editReview.ImageUrl);
+                    editReview.ImageUrl = newUrl;
+                    Notification.Notify(NotificationSeverity.Success, "Обновлено", "Новый скриншот загружен");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Ошибка при загрузке: {ex.Message}");
+            Notification.Notify(NotificationSeverity.Error, "Ошибка при загрузке", ex.Message);
         }
     }
 
@@ -105,7 +127,8 @@ else
     {
         DbContext.Reviews.Update(review);
         await DbContext.SaveChangesAsync();
-        
+        FileService.RunGarbageCollectorInBackground();
+        Notification.Notify(NotificationSeverity.Success, "Сохранено", "Изменения успешно применены");
         NavManager.NavigateTo("/admin/reviews");
     }
 }

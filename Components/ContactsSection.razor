@@ -1,24 +1,86 @@
-﻿<section id="contacts" class="section">
-    <div class="contact-container fade-up">
-        <h2 class="section-title" style="font-size: 2.2rem;">Давайте познакомимся!</h2>
-        <p style="font-size: 1.1rem; margin-bottom: 30px; max-width: 600px; margin: 0 auto 30px;">Первичная онлайн-консультация (20 мин) — <strong>бесплатно</strong>. Мы познакомимся, обсудим ваш запрос и наметим план действий.</p>
+﻿@using Blog10.Services
+@using System.Text.Json
+@inject SettingsService SettingsService
 
-        <div style="margin-bottom: 40px;">
-            <a href="tel:+79991234567" class="cta-btn" style="font-size: 1.1rem;">
-                <i class="fa-solid fa-phone-volume"></i> +7 (999) 123-45-67
-            </a>
-        </div>
+<section id="contacts" class="section">
+    <div class="contact-container fade-up">
+        
+        <h2 class="section-title" style="font-size: 2.2rem;">@title</h2>
+        <p style="font-size: 1.1rem; margin-bottom: 30px; max-width: 600px; margin: 0 auto 30px;">
+            @((MarkupString)description)
+        </p>
+
+        @if (phones.Any())
+        {
+            <div style="margin-bottom: 40px; display: flex; flex-direction: column; gap: 15px; align-items: center;">
+                @foreach (var phone in phones)
+                {
+                    <a href="tel:@CleanPhone(phone)" class="cta-btn" style="font-size: 1.1rem;">
+                        <i class="fa-solid fa-phone-volume"></i> @phone
+                    </a>
+                }
+            </div>
+        }
 
         <p style="color: var(--text-secondary);">Или напишите мне в удобный мессенджер:</p>
+        
         <div class="social-links">
-            <a href="#" class="social-btn sb-wa" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
-            <a href="#" class="social-btn sb-tg" aria-label="Telegram"><i class="fa-brands fa-telegram-plane"></i></a>
-            <a href="#" class="social-btn sb-vk" aria-label="Vkontakte"><i class="fa-brands fa-vk"></i></a>
+            @if (!string.IsNullOrWhiteSpace(waUrl))
+            {
+                <a href="@waUrl" target="_blank" class="social-btn sb-wa" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+            }
+            @if (!string.IsNullOrWhiteSpace(tgUrl))
+            {
+                <a href="@tgUrl" target="_blank" class="social-btn sb-tg" aria-label="Telegram"><i class="fa-brands fa-telegram-plane"></i></a>
+            }
+            @if (!string.IsNullOrWhiteSpace(vkUrl))
+            {
+                <a href="@vkUrl" target="_blank" class="social-btn sb-vk" aria-label="Vkontakte"><i class="fa-brands fa-vk"></i></a>
+            }
         </div>
 
         <p style="margin-top: 40px; font-size: 0.9rem; color: var(--text-secondary);">
-            <i class="fa-solid fa-location-dot" style="color: var(--primary-color);"></i> г. Москва, ул. Примерная, д. 10 (м. Университет) <br>
             Есть возможность онлайн-занятий по всему миру.
         </p>
     </div>
 </section>
+
+@code {
+    private string title = "Давайте познакомимся!";
+    private string description = "Первичная онлайн-консультация (20 мин) — бесплатно. Мы познакомимся, обсудим ваш запрос и наметим план действий.";
+    private List<string> phones = new() { "+7 (999) 123-45-67" };
+    
+    private string waUrl = "";
+    private string tgUrl = "";
+    private string vkUrl = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Подгружаем настройки при рендере секции
+        var savedTitle = await SettingsService.GetSettingAsync("Contact_Title");
+        if (!string.IsNullOrEmpty(savedTitle)) title = savedTitle;
+
+        var savedDesc = await SettingsService.GetSettingAsync("Contact_Desc");
+        if (!string.IsNullOrEmpty(savedDesc)) description = savedDesc;
+
+        var savedPhonesJson = await SettingsService.GetSettingAsync("Contact_Phones");
+        if (!string.IsNullOrEmpty(savedPhonesJson))
+        {
+            var stringList = JsonSerializer.Deserialize<List<string>>(savedPhonesJson);
+            if (stringList != null && stringList.Any())
+            {
+                phones = stringList;
+            }
+        }
+
+        waUrl = await SettingsService.GetSettingAsync("Contact_WaUrl") ?? "";
+        tgUrl = await SettingsService.GetSettingAsync("Contact_TgUrl") ?? "";
+        vkUrl = await SettingsService.GetSettingAsync("Contact_VkUrl") ?? "";
+    }
+
+    private string CleanPhone(string rawPhone)
+    {
+        if (string.IsNullOrWhiteSpace(rawPhone)) return "";
+        return rawPhone.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "");
+    }
+}

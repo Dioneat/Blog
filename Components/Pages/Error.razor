@@ -1,36 +1,64 @@
 ﻿@page "/Error"
-@using System.Diagnostics
+@inject NavigationManager NavManager
 
-<PageTitle>Error</PageTitle>
+<PageTitle>Технические неполадки | Елена Тимофеева</PageTitle>
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+<div class="error-page-container">
+    <div class="error-content fade-up">
+        
+        <div class="error-animation-box">
+            <div class="pulse-circle" style="background: rgba(220, 53, 69, 0.1);"></div>
+            <i class="fa-solid fa-screwdriver-wrench floating-icon" style="color: #dc3545; text-shadow: 0 10px 20px rgba(220, 53, 69, 0.2);"></i>
+            <i class="fa-solid fa-gear gear-icon gear-1"></i>
+            <i class="fa-solid fa-gear gear-icon gear-2"></i>
+        </div>
 
-@if (ShowRequestId)
-{
-    <p>
-        <strong>Request ID:</strong> <code>@RequestId</code>
-    </p>
-}
+        <h1 class="error-title" style="background: linear-gradient(45deg, #dc3545, #ff9800); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">500</h1>
+        <h2 class="error-subtitle">Что-то пошло не так...</h2>
+        
+        <p class="error-text">
+            На сервере произошла непредвиденная техническая заминка. 
+            Мы уже знаем об этом и чиним механизмы. Пожалуйста, попробуйте обновить страницу или зайти чуть позже.
+        </p>
 
-<h3>Development Mode</h3>
-<p>
-    Swapping to <strong>Development</strong> environment will display more detailed information about the error that occurred.
-</p>
-<p>
-    <strong>The Development environment shouldn't be enabled for deployed applications.</strong>
-    It can result in displaying sensitive information from exceptions to end users.
-    For local debugging, enable the <strong>Development</strong> environment by setting the <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong>
-    and restarting the app.
-</p>
+        <div class="error-actions">
+            <button onclick="location.reload()" class="cta-btn" style="background: #dc3545; box-shadow: 0 5px 15px rgba(220,53,69,0.3);">
+                <i class="fa-solid fa-rotate-right rz-mr-2"></i> Обновить страницу
+            </button>
+            <a href="/" class="cta-btn outline" style="border-color: #dc3545; color: #dc3545;">
+                <i class="fa-solid fa-house rz-mr-2"></i> На главную
+            </a>
+        </div>
+    </div>
+</div>
 
-@code{
-    [CascadingParameter]
-    private HttpContext? HttpContext { get; set; }
+<style>
+    .error-page-container {
+        min-height: 100vh; display: flex; align-items: center; justify-content: center;
+        padding: 120px 20px 60px; background: linear-gradient(135deg, #fffbfb 0%, #ffffff 100%);
+    }
+    .error-content { text-align: center; max-width: 600px; position: relative; z-index: 2; }
+    .error-animation-box { position: relative; width: 200px; height: 200px; margin: 0 auto 30px; display: flex; align-items: center; justify-content: center; }
+    .pulse-circle { position: absolute; width: 150px; height: 150px; border-radius: 50%; animation: pulse 3s infinite ease-in-out; z-index: 1; }
+    .floating-icon { font-size: 5rem; position: relative; z-index: 2; animation: float 4s infinite ease-in-out; }
+    
+    .gear-icon { position: absolute; color: var(--text-secondary); opacity: 0.6; z-index: 3; }
+    .gear-1 { font-size: 2.5rem; top: 20px; right: 20px; animation: spin 4s linear infinite; }
+    .gear-2 { font-size: 1.5rem; bottom: 30px; left: 30px; animation: spin-reverse 3s linear infinite; }
 
-    private string? RequestId { get; set; }
-    private bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
+    .error-title { font-size: 6rem; font-weight: 900; margin: 0; line-height: 1; letter-spacing: -2px; }
+    .error-subtitle { font-size: 2rem; color: var(--text-color); margin-bottom: 15px; font-weight: 800; }
+    .error-text { color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 40px; line-height: 1.6; }
+    .error-actions { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
 
-    protected override void OnInitialized() =>
-        RequestId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
-}
+    .error-actions .outline:hover { background: #dc3545 !important; color: white !important; }
+
+    @@keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+    @@keyframes pulse { 0% { transform: scale(0.9); opacity: 0.5; } 50% { transform: scale(1.1); opacity: 0.8; } 100% { transform: scale(0.9); opacity: 0.5; } }
+    @@keyframes spin { 100% { transform: rotate(360deg); } }
+    @@keyframes spin-reverse { 100% { transform: rotate(-360deg); } }
+
+    @@media (max-width: 768px) {
+        .error-title { font-size: 4.5rem; } .error-subtitle { font-size: 1.5rem; }
+    }
+</style>

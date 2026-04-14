@@ -9,9 +9,20 @@
         <p class="section-subtitle">Полезные статьи, советы и упражнения для развития речи.</p>
     </div>
 
-    <div class="grid-3">
-        @if (posts.Any())
-        {
+    @if (posts.Count == 0)
+    {
+        <div class="empty-state fade-up">
+            <div class="empty-icon-box">
+                <i class="fa-solid fa-pen-nib"></i>
+            </div>
+            <h3>Блог в процессе наполнения</h3>
+            <p>Я уже готовлю для вас интересные и полезные материалы по логопедии. Загляните сюда чуть позже!</p>
+            <a href="/#contacts" class="cta-btn outline">Задать вопрос</a>
+        </div>
+    }
+    else
+    {
+        <div class="grid-3">
             @foreach (var post in posts)
             {
                 <div class="card blog-card fade-up">
@@ -49,17 +60,52 @@
                     </div>
                 </div>
             }
-        }
-        else
-        {
-            <p style="text-align: center; grid-column: 1 / -1;">Статьи скоро появятся!</p>
-        }
-    </div>
+        </div>
 
-    <div style="text-align: center; margin-top: 40px;" class="fade-up">
-        <a href="/blog" class="cta-btn" style="background: transparent; border: 2px solid var(--primary-color); color: var(--primary-color); box-shadow: none;">Все статьи блога</a>
-    </div>
+        <div style="text-align: center; margin-top: 40px;" class="fade-up">
+            <a href="/blog" class="cta-btn outline">Все статьи блога</a>
+        </div>
+    }
 </section>
+
+<style>
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: var(--card-bg);
+        border-radius: 30px;
+        border: 2px dashed var(--accent-light);
+        max-width: 700px;
+        margin: 0 auto;
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition);
+    }
+    .empty-icon-box {
+        width: 80px;
+        height: 80px;
+        background: var(--accent-light);
+        color: var(--primary-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin: 0 auto 20px;
+    }
+    .empty-state h3 { color: var(--text-color); margin-bottom: 15px; font-size: 1.8rem; }
+    .empty-state p { color: var(--text-secondary); font-size: 1.05rem; margin-bottom: 25px; }
+
+    .outline {
+        background: transparent !important;
+        border: 2px solid var(--primary-color) !important;
+        color: var(--primary-color) !important;
+        box-shadow: none !important;
+    }
+    .outline:hover {
+        background: var(--primary-color) !important;
+        color: white !important;
+    }
+</style>
 
 @code {
     private List<BlogPost> posts = new();

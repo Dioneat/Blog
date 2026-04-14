@@ -9,9 +9,6 @@ namespace Blog10.Data
         {
         }
 
-        public AppDbContext()
-        {
-        }
         public DbSet<Quiz> Quizzes { get; set; }
         public DbSet<FlashcardSet> FlashcardSets { get; set; }
         public DbSet<AboutData> AboutPage { get; set; }
@@ -22,16 +19,10 @@ namespace Blog10.Data
         public DbSet<AdminAccount> AdminAccounts { get; set; }
         public DbSet<SystemLog> SystemLogs { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseSqlite("Data Source=blog_database.db");
-            }
-        }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder); 
+
             modelBuilder.Entity<BlogPost>()
                 .Property(e => e.Tags)
                 .HasConversion(
@@ -39,8 +30,26 @@ namespace Blog10.Data
                     v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()
                 );
 
+
+            modelBuilder.Entity<BlogPost>()
+                .HasIndex(a => a.Slug)
+                .IsUnique();
+
+            modelBuilder.Entity<BlogPost>()
+                .HasIndex(a => new { a.IsDraft, a.CreatedAt });
+
+            modelBuilder.Entity<AppSetting>()
+                .HasIndex(s => s.Key)
+                .IsUnique();
+
+
             modelBuilder.Entity<AdminAccount>().HasData(
-                new AdminAccount { Id = 1, Username = "admin", Password = "password123" }
+                new AdminAccount
+                {
+                    Id = 1,
+                    Username = "admin",
+                    Password = "password1256"
+                }
             );
         }
     }

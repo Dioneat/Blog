@@ -2,66 +2,191 @@
 @layout AdminLayout
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 
-@using Blog10.Data
-@using Microsoft.EntityFrameworkCore
-@using Radzen
-@using Radzen.Blazor
-
 @inject AppDbContext DbContext
+@inject NavigationManager NavManager
 
 <PageTitle>Дашборд | Админ-панель</PageTitle>
 
-<RadzenText TextStyle="TextStyle.H3" TagName="TagName.H1" class="rz-mb-4" style="color: var(--secondary-color);">
-    Добро пожаловать в панель управления!
-</RadzenText>
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" class="rz-mb-4">
+    <i class="fa-solid fa-gauge-high" style="font-size: 2rem; color: var(--rz-primary);"></i>
+    <RadzenText TextStyle="TextStyle.H3" TagName="TagName.H1" class="rz-m-0 rz-ml-2">Обзор проекта</RadzenText>
+</RadzenStack>
 
-<RadzenText TextStyle="TextStyle.Body1" class="rz-mb-4">
-    Здесь вы можете управлять контентом вашего сайта. Выберите нужный раздел в меню слева или используйте быстрые ссылки ниже.
-</RadzenText>
-
-<RadzenRow Gap="1.5rem" class="rz-mb-4">
-    
-    <RadzenColumn Size="12" SizeMD="4">
-        <RadzenCard style="text-align: center; padding: 30px; border-top: 5px solid var(--primary-color);">
-            <RadzenIcon Icon="article" style="font-size: 3rem; color: var(--primary-color); margin-bottom: 15px;" />
-            <RadzenText TextStyle="TextStyle.H6" style="color: var(--text-secondary);">Всего статей</RadzenText>
-            <RadzenText TextStyle="TextStyle.H2" style="font-weight: bold; color: var(--secondary-color);">@articlesCount</RadzenText>
-            <RadzenButton Text="Управление статьями" ButtonStyle="ButtonStyle.Light" class="rz-mt-2" style="width: 100%;" Click="@(() => NavManager.NavigateTo("/admin/articles"))" />
+@* --- ГЛАВНАЯ СТАТИСТИКА --- *@
+<div class="row rz-mb-4">
+    <div class="col-12 col-md-6 col-lg-3 rz-mb-3 rz-mb-lg-0">
+        <RadzenCard style="border-radius: 12px; border-bottom: 4px solid var(--rz-primary); height: 100%;">
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+                <div>
+                    <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-color-secondary rz-m-0">Статьи</RadzenText>
+                    <RadzenText TextStyle="TextStyle.H3" class="rz-m-0" style="font-weight: 800;">@publishedArticlesCount</RadzenText>
+                    @if (draftArticlesCount > 0)
+                    {
+                        <RadzenText TextStyle="TextStyle.Caption" class="rz-color-warning"><i class="fa-solid fa-pen-ruler"></i> + @draftArticlesCount в черновиках</RadzenText>
+                    }
+                </div>
+                <div style="background: var(--rz-primary-lighter); padding: 15px; border-radius: 50%;">
+                    <i class="fa-solid fa-file-lines fa-2x" style="color: var(--rz-primary);"></i>
+                </div>
+            </RadzenStack>
         </RadzenCard>
-    </RadzenColumn>
+    </div>
 
-    <RadzenColumn Size="12" SizeMD="4">
-        <RadzenCard style="text-align: center; padding: 30px; border-top: 5px solid #4caf50;">
-            <RadzenIcon Icon="reviews" style="font-size: 3rem; color: #4caf50; margin-bottom: 15px;" />
-            <RadzenText TextStyle="TextStyle.H6" style="color: var(--text-secondary);">Отзывов</RadzenText>
-            <RadzenText TextStyle="TextStyle.H2" style="font-weight: bold; color: var(--secondary-color);">@reviewsCount</RadzenText>
-            <RadzenButton Text="Смотреть отзывы" ButtonStyle="ButtonStyle.Light" class="rz-mt-2" style="width: 100%;" Click="@(() => NavManager.NavigateTo("/admin/reviews"))" />
+    <div class="col-12 col-md-6 col-lg-3 rz-mb-3 rz-mb-lg-0">
+        <RadzenCard style="border-radius: 12px; border-bottom: 4px solid var(--rz-success); height: 100%;">
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+                <div>
+                    <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-color-secondary rz-m-0">Отзывы</RadzenText>
+                    <RadzenText TextStyle="TextStyle.H3" class="rz-m-0" style="font-weight: 800;">@reviewsCount</RadzenText>
+                </div>
+                <div style="background: var(--rz-success-lighter); padding: 15px; border-radius: 50%;">
+                    <i class="fa-solid fa-comments fa-2x" style="color: var(--rz-success);"></i>
+                </div>
+            </RadzenStack>
         </RadzenCard>
-    </RadzenColumn>
+    </div>
 
-    <RadzenColumn Size="12" SizeMD="4">
-        <RadzenCard style="text-align: center; padding: 30px; border-top: 5px solid #ff9800;">
-            <RadzenIcon Icon="label" style="font-size: 3rem; color: #ff9800; margin-bottom: 15px;" />
-            <RadzenText TextStyle="TextStyle.H6" style="color: var(--text-secondary);">Категорий</RadzenText>
-            <RadzenText TextStyle="TextStyle.H2" style="font-weight: bold; color: var(--secondary-color);">@categoriesCount</RadzenText>
-            <RadzenButton Text="Редактировать" ButtonStyle="ButtonStyle.Light" class="rz-mt-2" style="width: 100%;" Click="@(() => NavManager.NavigateTo("/admin/categories"))" />
+    <div class="col-12 col-md-6 col-lg-3 rz-mb-3 rz-mb-lg-0">
+        <RadzenCard style="border-radius: 12px; border-bottom: 4px solid var(--rz-warning); height: 100%;">
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+                <div>
+                    <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-color-secondary rz-m-0">Интерактивы</RadzenText>
+                    <RadzenText TextStyle="TextStyle.H3" class="rz-m-0" style="font-weight: 800;">@(quizzesCount + flashcardsCount)</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Caption" class="rz-color-secondary">Тестов: @quizzesCount | Карточек: @flashcardsCount</RadzenText>
+                </div>
+                <div style="background: var(--rz-warning-lighter); padding: 15px; border-radius: 50%;">
+                    <i class="fa-solid fa-puzzle-piece fa-2x" style="color: var(--rz-warning);"></i>
+                </div>
+            </RadzenStack>
         </RadzenCard>
-    </RadzenColumn>
+    </div>
 
-</RadzenRow>
+    <div class="col-12 col-md-6 col-lg-3">
+        <RadzenCard style="border-radius: 12px; border-bottom: 4px solid var(--rz-info); height: 100%;">
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+                <div>
+                    <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-color-secondary rz-m-0">Категории</RadzenText>
+                    <RadzenText TextStyle="TextStyle.H3" class="rz-m-0" style="font-weight: 800;">@categoriesCount</RadzenText>
+                </div>
+                <div style="background: var(--rz-info-lighter); padding: 15px; border-radius: 50%;">
+                    <i class="fa-solid fa-tags fa-2x" style="color: var(--rz-info);"></i>
+                </div>
+            </RadzenStack>
+        </RadzenCard>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 col-xl-8 rz-mb-4">
+        <RadzenCard style="border-radius: 12px; height: 100%;">
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-3">
+                <RadzenText TextStyle="TextStyle.H6" class="rz-m-0"><i class="fa-regular fa-clock rz-mr-2"></i> Последние статьи</RadzenText>
+                <RadzenButton Text="Все статьи" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small" Click="@(() => NavManager.NavigateTo("/admin/articles"))" />
+            </RadzenStack>
+
+            @if (recentArticles == null)
+            {
+                <RadzenProgressBar Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+            }
+            else if (!recentArticles.Any())
+            {
+                <RadzenAlert AlertStyle="AlertStyle.Info" ShowIcon="false">У вас пока нет ни одной статьи.</RadzenAlert>
+            }
+            else
+            {
+                <RadzenDataGrid Data="@recentArticles" TItem="BlogPost" AllowPaging="false">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="BlogPost" Property="Title" Title="Заголовок">
+                            <Template Context="post">
+                                <div style="white-space: normal; line-height: 1.4;">
+                                    <strong>@post.Title</strong>
+                                    <br />
+                                    <span style="font-size: 0.8rem; color: var(--rz-text-disabled-color);">@post.CreatedAt.ToString("dd.MM.yyyy HH:mm")</span>
+                                </div>
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="BlogPost" Title="Статус" Width="120px" TextAlign="TextAlign.Center">
+                            <Template Context="post">
+                                @if (post.IsDraft)
+                                {
+                                    <RadzenBadge BadgeStyle="BadgeStyle.Warning" Text="Черновик" />
+                                }
+                                else
+                                {
+
+                                    <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="Опубликована" />
+                                }
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="BlogPost" Title="Действия" Width="80px" TextAlign="TextAlign.Center">
+                            <Template Context="post">
+                                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Small"
+                                              Click="@(() => NavManager.NavigateTo($"/admin/articles/edit/{post.Id}"))" />
+                            </Template>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
+            }
+        </RadzenCard>
+    </div>
+
+    <div class="col-12 col-xl-4 rz-mb-4">
+        <RadzenCard style="border-radius: 12px; height: 100%;">
+            <RadzenText TextStyle="TextStyle.H6" class="rz-mb-3"><i class="fa-solid fa-bolt rz-mr-2" style="color: #ff9800;"></i> Быстрые действия</RadzenText>
+            
+            <RadzenStack Gap="1rem">
+                <RadzenButton Text="Написать статью" Icon="draw" ButtonStyle="ButtonStyle.Primary" class="rz-w-100 rz-text-align-left"
+                              Click="@(() => NavManager.NavigateTo("/admin/articles/create"))" />
+                              
+                <RadzenButton Text="Импорт из ВК" Icon="cloud_download" ButtonStyle="ButtonStyle.Info" class="rz-w-100 rz-text-align-left"
+                              Click="@(() => NavManager.NavigateTo("/admin/articles/vk-sync"))" />
+                              
+                <RadzenButton Text="Добавить отзыв" Icon="add_comment" ButtonStyle="ButtonStyle.Success" class="rz-w-100 rz-text-align-left"
+                              Click="@(() => NavManager.NavigateTo("/admin/reviews/create"))" />
+                              
+                <RadzenButton Text="Создать тест" Icon="quiz" ButtonStyle="ButtonStyle.Secondary" class="rz-w-100 rz-text-align-left"
+                              Click="@(() => NavManager.NavigateTo("/admin/quizzes/create"))" />
+                              
+                <hr style="margin: 10px 0; border-top: 1px solid var(--rz-secondary-light);" />
+                
+                <RadzenButton Text="Проверить ошибки системы" Icon="monitor_heart" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined" class="rz-w-100 rz-text-align-left"
+                              Click="@(() => NavManager.NavigateTo("/admin/system"))" />
+            </RadzenStack>
+        </RadzenCard>
+    </div>
+</div>
 
 @code {
-    [Inject]
-    public NavigationManager NavManager { get; set; } = default!;
-
-    private int articlesCount = 0;
+    private int publishedArticlesCount = 0;
+    private int draftArticlesCount = 0;
     private int reviewsCount = 0;
     private int categoriesCount = 0;
+    private int quizzesCount = 0;
+    private int flashcardsCount = 0;
+
+    private List<BlogPost>? recentArticles;
 
     protected override async Task OnInitializedAsync()
     {
-        articlesCount = await DbContext.Articles.CountAsync();
+        publishedArticlesCount = await DbContext.Articles.CountAsync(a => !a.IsDraft);
+        draftArticlesCount = await DbContext.Articles.CountAsync(a => a.IsDraft);
+        
         reviewsCount = await DbContext.Reviews.CountAsync();
         categoriesCount = await DbContext.Categories.CountAsync();
+        quizzesCount = await DbContext.Quizzes.CountAsync();
+        flashcardsCount = await DbContext.FlashcardSets.CountAsync();
+
+        recentArticles = await DbContext.Articles
+            .AsNoTracking()
+            .OrderByDescending(a => a.CreatedAt)
+            .Take(5)
+            .Select(a => new BlogPost
+            {
+                Id = a.Id,
+                Title = a.Title,
+                CreatedAt = a.CreatedAt,
+                IsDraft = a.IsDraft
+            })
+            .ToListAsync();
     }
 }

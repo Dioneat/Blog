@@ -2,12 +2,6 @@
 @layout AdminLayout
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 
-@using Blog10.Data
-@using Blog10.Models
-@using Microsoft.EntityFrameworkCore
-@using Radzen
-@using Radzen.Blazor
-
 @inject AppDbContext DbContext
 @inject DialogService DialogService
 
@@ -44,7 +38,7 @@
 
     private async Task LoadCategories()
     {
-        categories = await DbContext.Categories.OrderBy(c => c.Name).ToListAsync();
+        categories = await DbContext.Categories.AsNoTracking().OrderBy(c => c.Name).ToListAsync();
     }
 
     private async Task AddCategory()

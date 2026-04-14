@@ -7,8 +7,7 @@ using System.Security.Claims;
 namespace Blog10.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
-    public class AuthController : ControllerBase
+    public class AuthController : Controller
     {
         private readonly IAuthService _authService;
 
@@ -18,8 +17,11 @@ namespace Blog10.Controllers
         }
 
         [HttpPost("login")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login([FromForm] string username, [FromForm] string password)
         {
+            await Task.Delay(500);
+
             if (await _authService.ValidateCredentialsAsync(username, password))
             {
                 var claims = new List<Claim>
@@ -31,7 +33,17 @@ namespace Blog10.Controllers
                 var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                 var principal = new ClaimsPrincipal(identity);
 
-                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+                var authProperties = new AuthenticationProperties
+                {
+                    IsPersistent = true, 
+                    ExpiresUtc = DateTimeOffset.UtcNow.AddHours(24),
+                    AllowRefresh = true 
+                };
+
+                await HttpContext.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    principal,
+                    authProperties);
 
                 return Redirect("/admin");
             }
@@ -39,7 +51,8 @@ namespace Blog10.Controllers
             return Redirect("/login?error=true");
         }
 
-        [HttpGet("logout")]
+        [HttpPost("logout")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);

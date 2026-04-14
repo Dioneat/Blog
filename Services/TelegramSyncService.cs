@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+﻿using System.Net;
 
 namespace Blog10.Services
 {
@@ -6,7 +6,7 @@ namespace Blog10.Services
     {
         private readonly HttpClient _httpClient;
         private readonly SettingsService _settings;
-        private readonly AppLogService _logService; 
+        private readonly AppLogService _logService;
 
         public TelegramSyncService(HttpClient httpClient, SettingsService settings, AppLogService logService)
         {
@@ -22,11 +22,14 @@ namespace Blog10.Services
 
             if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(chatId))
             {
-                await _logService.LogWarningAsync("Telegram API", "Попытка публикации отменена: не настроены ключи в админке.");
+                await _logService.LogWarningAsync("Telegram API", "Попытка публикации отменена: не настроены ключи.");
                 return (false, "Токен бота или ID канала Telegram не настроены.");
             }
 
-            string text = $"<b>{title}</b>\n\n{shortDescription}\n\n👉 <a href=\"{articleUrl}\">Читать полную статью на сайте</a>";
+            string safeTitle = WebUtility.HtmlEncode(title);
+            string safeDescription = WebUtility.HtmlEncode(shortDescription);
+
+            string text = $"<b>{safeTitle}</b>\n\n{safeDescription}\n\n👉 <a href=\"{articleUrl}\">Читать статью на сайте</a>";
 
             var payload = new
             {
@@ -41,19 +44,18 @@ namespace Blog10.Services
 
                 if (response.IsSuccessStatusCode)
                 {
-                    await _logService.LogInfoAsync("Telegram API", $"Статья '{title}' успешно опубликована в канале.");
+                    await _logService.LogInfoAsync("Telegram API", $"Статья '{title}' успешно опубликована.");
                     return (true, "Статья успешно опубликована в Telegram!");
                 }
 
                 var errorJson = await response.Content.ReadAsStringAsync();
-
-                await _logService.LogErrorAsync("Telegram API", $"Ошибка ответа от серверов Telegram: {errorJson}");
+                await _logService.LogErrorAsync("Telegram API", $"Ошибка от серверов Telegram: {errorJson}");
                 return (false, $"Ошибка Telegram: {errorJson}");
             }
             catch (Exception ex)
             {
-                await _logService.LogErrorAsync("Telegram API", "Сбой сети при попытке отправить сообщение в Telegram.", ex);
-                return (false, $"Системная ошибка отправки: {ex.Message}");
+                await _logService.LogErrorAsync("Telegram API", "Сбой сети", ex);
+                return (false, $"Системная ошибка: {ex.Message}");
             }
         }
     }

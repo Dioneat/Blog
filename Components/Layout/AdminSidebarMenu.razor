@@ -4,34 +4,63 @@
 @inject NavigationManager NavManager
 @implements IDisposable
 
-
-<RadzenHeader style="z-index: 1050; position: fixed; width: 100%; top: 0; height: 60px;">
-    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0" class="rz-p-2">
-        <RadzenSidebarToggle Click="@ToggleMenu" />
-        <RadzenLabel Text="Панель управления" style="font-weight: 700; font-size: 1.2rem; margin-left: 10px;" />
+<RadzenHeader style="z-index: 1050; position: fixed; width: 100%; top: 0; height: 60px; box-shadow: var(--shadow-sm);">
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-w-100" style="height: 100%; padding: 0 20px 0 10px;">
         
-        <div style="margin-left: auto; padding-right: 20px;">
-            <a href="/api/auth/logout" style="color: var(--text-secondary); text-decoration: none; display: flex; align-items: center; gap: 5px;">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0">
+            <RadzenSidebarToggle Click="@ToggleMenu" />
+            <RadzenLabel Text="Панель управления" style="font-weight: 700; font-size: 1.2rem; margin-left: 10px;" />
+        </RadzenStack>
+        
+        <form action="/api/auth/logout" method="post" style="margin: 0;">
+            <AntiforgeryToken />
+            <button type="submit" class="logout-btn">
                 <i class="fa-solid fa-right-from-bracket"></i> Выйти
-            </a>
-        </div>
+            </button>
+        </form>
+
     </RadzenStack>
 </RadzenHeader>
+
 <RadzenSidebar @bind-Expanded="@sidebarExpanded" class="admin-sidebar" style="padding-top: 60px; z-index: 1040;">
     <RadzenPanelMenu>
         <RadzenPanelMenuItem Text="Дашборд" Icon="dashboard" Path="/admin" />
         <RadzenPanelMenuItem Text="Статьи блога" Icon="article" Path="/admin/articles" />
         <RadzenPanelMenuItem Text="Отзывы" Icon="reviews" Path="/admin/reviews" />
+        <RadzenPanelMenuItem Text="Контакты на сайте" Icon="contact_phone" Path="/admin/settings/contacts" />
         <RadzenPanelMenuItem Text="Категории" Icon="label" Path="/admin/categories" />
         <RadzenPanelMenuItem Text="Обо мне" Icon="person" Path="/admin/about" />
         <RadzenPanelMenuItem Text="Тесты" Path="/admin/quizzes" Icon="quiz" />
         <RadzenPanelMenuItem Text="Карточки" Path="/admin/flashcards" Icon="style" />
-        <RadzenPanelMenuItem Text="Профиль" Icon="manage_accounts" Path="/admin/profile" />
         <RadzenPanelMenuItem Text="Настройки" Icon="settings" Path="/admin/settings" />
         <RadzenPanelMenuItem Text="Логи и Состояние" Icon="monitor_heart" Path="/admin/system" />
         <RadzenPanelMenuItem Text="Вернуться на сайт" Icon="home" Path="/" style="margin-top: 50px; border-top: 1px solid var(--rz-secondary-light);" />
     </RadzenPanelMenu>
 </RadzenSidebar>
+
+<style>
+    .logout-btn {
+        background: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+        border: 1px solid transparent;
+        padding: 6px 18px;
+        border-radius: 50px;
+        cursor: pointer;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+    .logout-btn:hover {
+        background: #dc3545;
+        color: white;
+        box-shadow: 0 4px 10px rgba(220, 53, 69, 0.2);
+        transform: translateY(-1px);
+    }
+</style>
+
 @code {
     bool sidebarExpanded = true;
 

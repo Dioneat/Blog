@@ -1,27 +1,12 @@
-﻿@using Microsoft.AspNetCore.Components.Authorization
-<CascadingAuthenticationState>
-    <Router AppAssembly="@typeof(Program).Assembly">
-        <Found Context="routeData">
-            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)">
-                <NotAuthorized>
-                    <div style="padding-top: 150px; text-align: center; min-height: 60vh;">
-                        <h2 style="color: var(--primary-color);">Доступ закрыт</h2>
-                        <p>Только для администратора.</p>
-                        <a href="/login" class="cta-btn" style="margin-top: 20px; display: inline-block;">Войти в кабинет</a>
-                    </div>
-                </NotAuthorized>
-            </AuthorizeRouteView>
-            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-        </Found>
-        <NotFound>
-            <PageTitle>Страница не найдена</PageTitle>
-            <LayoutView Layout="@typeof(Layout.MainLayout)">
-                <div style="padding-top: 150px; text-align: center; min-height: 60vh;">
-                    <h2>Ошибка 404</h2>
-                    <p role="alert">Извините, такой страницы не существует.</p>
-                    <a href="/" class="blog-link">Вернуться на главную</a>
-                </div>
-            </LayoutView>
-        </NotFound>
-    </Router>
-</CascadingAuthenticationState>
+﻿<Router AppAssembly="typeof(Program).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Страница не найдена</PageTitle>
+        <LayoutView Layout="typeof(MainLayout)">
+            <Blog10.Components.Pages.NotFound />
+        </LayoutView>
+    </NotFound>
+</Router>

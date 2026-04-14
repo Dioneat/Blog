@@ -1,6 +1,7 @@
 ﻿using Blog10.Data;
 using Blog10.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Blog10.Services
 {
@@ -8,25 +9,42 @@ namespace Blog10.Services
     {
         private readonly AppDbContext _context;
         private readonly EncryptionService _encryption;
+        private readonly IMemoryCache _cache;
 
-        public SettingsService(AppDbContext context, EncryptionService encryption)
+        public SettingsService(AppDbContext context, EncryptionService encryption, IMemoryCache cache)
         {
             _context = context;
             _encryption = encryption;
+            _cache = cache;
         }
 
         public async Task<string> GetSettingAsync(string key)
         {
-            var setting = await _context.Settings.FirstOrDefaultAsync(s => s.Key == key);
-            if (setting == null || string.IsNullOrEmpty(setting.Value)) return "";
+            if (_cache.TryGetValue(key, out string? cachedValue))
+            {
+                return cachedValue ?? "";
+            }
 
-            return setting.IsEncrypted ? _encryption.Decrypt(setting.Value) : setting.Value;
+            var setting = await _context.Settings.AsNoTracking().FirstOrDefaultAsync(s => s.Key == key);
+
+            if (setting == null || string.IsNullOrEmpty(setting.Value))
+                return "";
+
+            string result = setting.IsEncrypted ? _encryption.Decrypt(setting.Value) : setting.Value;
+
+            _cache.Set(key, result, TimeSpan.FromHours(24));
+
+            return result;
         }
 
         public async Task SetSettingAsync(string key, string value, bool encrypt = true)
         {
             var setting = await _context.Settings.FirstOrDefaultAsync(s => s.Key == key);
-            string processedValue = encrypt ? _encryption.Encrypt(value) : value;
+
+            string safeValue = value ?? "";
+            string processedValue = encrypt && !string.IsNullOrEmpty(safeValue)
+                ? _encryption.Encrypt(safeValue)
+                : safeValue;
 
             if (setting == null)
             {
@@ -37,7 +55,10 @@ namespace Blog10.Services
                 setting.Value = processedValue;
                 setting.IsEncrypted = encrypt;
             }
+
             await _context.SaveChangesAsync();
+
+            _cache.Set(key, safeValue, TimeSpan.FromHours(24));
         }
     }
 }

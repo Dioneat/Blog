@@ -2,14 +2,10 @@
 @layout AdminLayout
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 
-@using Blog10.Data
-@using Blog10.Models
-@using Microsoft.EntityFrameworkCore
-@using Radzen
-@using Radzen.Blazor
 @inject AppDbContext DbContext
 @inject NavigationManager NavManager
 @inject DialogService DialogService
+@inject Blog10.Services.FileService FileService
 
 <PageTitle>Управление отзывами</PageTitle>
 
@@ -44,9 +40,9 @@
 
         <RadzenDataGridColumn TItem="Review" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Width="120px">
             <Template Context="review">
-                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" 
+                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
                               Click="@(() => NavManager.NavigateTo($"/admin/reviews/edit/{review.Id}"))" />
-                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" 
+                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat"
                               Click="@(() => DeleteReview(review))" class="rz-ml-1" />
             </Template>
         </RadzenDataGridColumn>
@@ -55,12 +51,14 @@
 
 @code {
     private List<Review> reviews = new();
-    
     private RadzenDataGrid<Review> reviewsGrid;
 
     protected override async Task OnInitializedAsync()
     {
-        reviews = await DbContext.Reviews.OrderByDescending(r => r.CreatedAt).ToListAsync();
+        reviews = await DbContext.Reviews
+            .AsNoTracking()
+            .OrderByDescending(r => r.CreatedAt)
+            .ToListAsync();
     }
 
     private async Task DeleteReview(Review review)
@@ -68,11 +66,12 @@
         var result = await DialogService.Confirm($"Удалить отзыв от {review.AuthorName}?", "Подтверждение");
         if (result == true)
         {
+            FileService.DeleteFile(review.ImageUrl);
+
             DbContext.Reviews.Remove(review);
             await DbContext.SaveChangesAsync();
             
             reviews.Remove(review);
-            
             await reviewsGrid.Reload();
         }
     }

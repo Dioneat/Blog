@@ -1,5 +1,6 @@
 ﻿@rendermode InteractiveServer
 @inject NavigationManager NavManager
+@inject IJSRuntime JSRuntime
 @implements IDisposable
 
 <header>
@@ -65,6 +66,17 @@
         InvokeAsync(StateHasChanged);
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("restoreTheme");
+        }
+        catch
+        {
+        }
+    }
+
     private void ToggleMenu()
     {
         isMenuOpen = !isMenuOpen;
@@ -78,7 +90,6 @@
     private string GetActive(string href)
     {
         var currentUrl = NavManager.ToBaseRelativePath(NavManager.Uri);
-        
         var pathWithoutQuery = currentUrl.Split('?')[0].Split('#')[0];
 
         if (href == "/")
@@ -93,7 +104,6 @@
         }
 
         var hrefClean = href.TrimStart('/');
-        
 
         if (pathWithoutQuery.Equals(hrefClean, StringComparison.OrdinalIgnoreCase) ||
             pathWithoutQuery.StartsWith(hrefClean + "/", StringComparison.OrdinalIgnoreCase))

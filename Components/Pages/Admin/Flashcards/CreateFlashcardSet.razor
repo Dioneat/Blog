@@ -43,11 +43,10 @@
             else
             {
                 <div style="display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));">
-                    <div style="display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));">
-                        @foreach (var card in editorCards)
-                        {
-                            <div @key="card">
-                                <RadzenCard style="position: relative; border-top: 4px solid var(--rz-primary);">
+                    @foreach (var card in editorCards)
+                    {
+                        <div @key="card">
+                            <RadzenCard style="position: relative; border-top: 4px solid var(--rz-primary);">
                                     <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Text" Size="ButtonSize.ExtraSmall"
                                                   style="position: absolute; top: 5px; right: 5px;" Click="@(() => editorCards.Remove(card))" />
                                 
@@ -77,7 +76,6 @@
                             </div>
                         }
                     </div>
-                </div>
             }
         </RadzenStack>
 
@@ -122,6 +120,11 @@
 
     private async Task OnSubmit()
     {
+        if (editorCards.Count == 0)
+        {
+            Notification.Notify(NotificationSeverity.Error, "Ошибка", "В наборе должна быть хотя бы одна карточка!");
+            return;
+        }
         newSet.CardsJson = JsonSerializer.Serialize(editorCards);
         
         DbContext.FlashcardSets.Add(newSet);

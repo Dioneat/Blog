@@ -23,56 +23,74 @@ namespace Blog10.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("AboutBlocksJson")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AboutPageTitle")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AboutSectionSubtitle")
+                        .HasMaxLength(300)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AboutSectionTitle")
+                        .HasMaxLength(150)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("BioHtml")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("EducationHtml")
-                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("HeroDescription")
+                        .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("HeroSubtitle")
-                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("HeroTag")
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("HeroTitle")
-                        .IsRequired()
+                        .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("MainHeroImageUrl")
-                        .IsRequired()
+                        .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PrinciplesHtml")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ProfileImageUrl")
-                        .IsRequired()
+                        .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("QuoteAuthor")
-                        .IsRequired()
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("QuoteText")
-                        .IsRequired()
+                        .HasMaxLength(1000)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("SkillsHtml")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("StatsCertificates")
-                        .IsRequired()
+                        .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("StatsChildren")
-                        .IsRequired()
+                        .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("StatsExperience")
-                        .IsRequired()
+                        .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -88,10 +106,12 @@ namespace Blog10.Migrations
 
                     b.Property<string>("Password")
                         .IsRequired()
+                        .HasMaxLength(255)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Username")
                         .IsRequired()
+                        .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -110,6 +130,7 @@ namespace Blog10.Migrations
             modelBuilder.Entity("Blog10.Models.AppSetting", b =>
                 {
                     b.Property<string>("Key")
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsEncrypted")
@@ -117,9 +138,13 @@ namespace Blog10.Migrations
 
                     b.Property<string>("Value")
                         .IsRequired()
+                        .HasMaxLength(2000)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Key");
+
+                    b.HasIndex("Key")
+                        .IsUnique();
 
                     b.ToTable("Settings");
                 });
@@ -136,15 +161,18 @@ namespace Blog10.Migrations
 
                     b.Property<string>("CoverImageUrl")
                         .IsRequired()
+                        .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("FileAttachmentName")
+                        .HasMaxLength(250)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("FileAttachmentUrl")
+                        .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
                     b.Property<int?>("FlashcardSetId")
@@ -154,9 +182,11 @@ namespace Blog10.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("MainAudioUrl")
+                        .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("MainVideoUrl")
+                        .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
                     b.Property<int?>("QuizId")
@@ -164,10 +194,12 @@ namespace Blog10.Migrations
 
                     b.Property<string>("ShortDescription")
                         .IsRequired()
+                        .HasMaxLength(1000)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Slug")
                         .IsRequired()
+                        .HasMaxLength(250)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Tags")
@@ -176,6 +208,7 @@ namespace Blog10.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
+                        .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
                     b.Property<long?>("VkPostId")
@@ -186,6 +219,11 @@ namespace Blog10.Migrations
                     b.HasIndex("FlashcardSetId");
 
                     b.HasIndex("QuizId");
+
+                    b.HasIndex("Slug")
+                        .IsUnique();
+
+                    b.HasIndex("IsDraft", "CreatedAt");
 
                     b.ToTable("Articles");
                 });
@@ -198,6 +236,7 @@ namespace Blog10.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -220,6 +259,7 @@ namespace Blog10.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasMaxLength(150)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -246,10 +286,12 @@ namespace Blog10.Migrations
 
                     b.Property<string>("Subtitle")
                         .IsRequired()
+                        .HasMaxLength(300)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Title")
                         .IsRequired()
+                        .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -265,24 +307,25 @@ namespace Blog10.Migrations
 
                     b.Property<string>("AuthorName")
                         .IsRequired()
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ChildInfo")
-                        .IsRequired()
+                        .HasMaxLength(150)
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ImageUrl")
-                        .IsRequired()
+                        .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsDraft")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Text")
-                        .IsRequired()
+                        .HasMaxLength(2000)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -304,14 +347,17 @@ namespace Blog10.Migrations
 
                     b.Property<string>("Level")
                         .IsRequired()
+                        .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Message")
                         .IsRequired()
+                        .HasMaxLength(1000)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Source")
                         .IsRequired()
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");

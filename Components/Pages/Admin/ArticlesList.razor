@@ -1,15 +1,13 @@
 ﻿@page "/admin/articles"
-@layout AdminLayout // УКАЗЫВАЕМ, ЧТО ЭТА СТРАНИЦА ИСПОЛЬЗУЕТ АДМИНСКИЙ МАКЕТ
+@layout AdminLayout
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 
-@using Blog10.Data
-@using Blog10.Models
-@using Microsoft.EntityFrameworkCore
-@using Radzen
-@using Radzen.Blazor
+@using System.Text.RegularExpressions
+
 @inject AppDbContext DbContext
 @inject NavigationManager NavManager
 @inject DialogService DialogService
+@inject Blog10.Services.FileService FileService
 
 <PageTitle>Управление статьями</PageTitle>
 
@@ -48,7 +46,7 @@
             </Template>
         </RadzenDataGridColumn>
 
-    <RadzenDataGridColumn TItem="BlogPost" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Width="120px">
+        <RadzenDataGridColumn TItem="BlogPost" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Width="120px">
             <Template Context="post">
                 <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium"
                               Click="@(() => EditPost(post.Id))" class="rz-mr-1" />
@@ -58,9 +56,9 @@
         </RadzenDataGridColumn>
     </Columns>
 </RadzenDataGrid>
+
 @code {
     private List<BlogPost> articles = new List<BlogPost>();
-    
     private RadzenDataGrid<BlogPost> articlesGrid;
 
     protected override async Task OnInitializedAsync()
@@ -74,18 +72,34 @@
     private async Task DeletePost(BlogPost post)
     {
         var result = await DialogService.Confirm(
-            $"Вы действительно хотите навсегда удалить статью \"{post.Title}\"?",
+            $"Вы действительно хотите навсегда удалить статью \"{post.Title}\"? Все прикрепленные файлы также будут удалены.",
             "Подтверждение удаления",
             new ConfirmOptions() { OkButtonText = "Да, удалить", CancelButtonText = "Отмена" });
 
         if (result.HasValue && result.Value == true)
         {
+            FileService.DeleteFile(post.CoverImageUrl);
+            FileService.DeleteFile(post.MainAudioUrl);
+            FileService.DeleteFile(post.MainVideoUrl);
+            FileService.DeleteFile(post.FileAttachmentUrl);
+
+            if (!string.IsNullOrEmpty(post.Content))
+            {
+                var matches = Regex.Matches(post.Content, @"src=""(/uploads/images/[^""]+)""");
+                foreach (Match match in matches)
+                {
+                    if (match.Groups.Count > 1)
+                    {
+                        FileService.DeleteFile(match.Groups[1].Value);
+                    }
+                }
+            }
             DbContext.Articles.Remove(post);
             await DbContext.SaveChangesAsync();
             
             articles.Remove(post);
-            
             await articlesGrid.Reload();
+            FileService.RunGarbageCollectorInBackground();
         }
     }
 }

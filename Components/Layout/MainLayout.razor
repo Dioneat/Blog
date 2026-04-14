@@ -9,6 +9,40 @@
     </main>
 
     <Footer />
+    <div class="a11y-panel" id="a11yPanel">
+        <h3><i class="fa-solid fa-universal-access"></i> Настройки просмотра</h3>
+
+        <div class="a11y-control">
+            <label>Размер шрифта:</label>
+            <div class="a11y-btn-group">
+                <button class="a11y-btn" onclick="changeFontSize(-1)">A-</button>
+                <button class="a11y-btn" onclick="resetFontSize()">Норма</button>
+                <button class="a11y-btn" onclick="changeFontSize(1)">A+</button>
+            </div>
+        </div>
+
+        <div class="a11y-control">
+            <label>Контрастность:</label>
+            <div class="a11y-btn-group">
+                <button class="a11y-btn" onclick="setContrastMode(false)">Цвет</button>
+                <button class="a11y-btn" onclick="setContrastMode(true)">Ч/Б</button>
+            </div>
+        </div>
+
+        <div class="a11y-control">
+            <label>Изображения:</label>
+            <div class="a11y-btn-group">
+                <button class="a11y-btn" onclick="toggleImages(true)">Показать</button>
+                <button class="a11y-btn" onclick="toggleImages(false)">Скрыть</button>
+            </div>
+        </div>
+
+        <button class="a11y-btn" style="width: 100%; margin-top: 10px; border: 1px solid var(--accent-light);" onclick="toggleA11yPanel()">Закрыть панель</button>
+    </div>
+
+    <button id="scrollToTop" onclick="scrollToTop()" aria-label="Наверх">
+        <i class="fa-solid fa-chevron-up"></i>
+    </button>
 </div>
 
 <RadzenComponents @rendermode="@(new InteractiveServerRenderMode(prerender: false))" />

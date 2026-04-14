@@ -1,17 +1,24 @@
-﻿namespace Blog10.Models
-{
+﻿using System.ComponentModel.DataAnnotations;
 
+namespace Blog10.Models
+{
     public class Review
     {
+        [Key]
         public int Id { get; set; }
 
-        public string ImageUrl { get; set; } = string.Empty;
+        [MaxLength(500)]
+        public string? ImageUrl { get; set; }
 
-        public string Text { get; set; } = string.Empty;
+        [MaxLength(2000)]
+        public string? Text { get; set; }
 
+        [Required(ErrorMessage = "Имя автора обязательно")]
+        [MaxLength(100)]
         public string AuthorName { get; set; } = string.Empty;
 
-        public string ChildInfo { get; set; } = string.Empty;
+        [MaxLength(150)]
+        public string? ChildInfo { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 

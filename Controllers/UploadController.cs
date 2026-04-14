@@ -8,90 +8,67 @@ namespace Blog10.Controllers
     {
         private readonly IWebHostEnvironment _env;
 
+        private const long MaxImageSize = 5 * 1024 * 1024;     // 5 МБ
+        private const long MaxDocumentSize = 10 * 1024 * 1024; // 10 МБ
+        private const long MaxAudioSize = 25 * 1024 * 1024;    // 25 МБ
+        private const long MaxVideoSize = 100 * 1024 * 1024;   // 100 МБ
+
         public UploadController(IWebHostEnvironment env)
         {
             _env = env;
         }
+
         [HttpPost("audio")]
+        [RequestSizeLimit(MaxAudioSize + 1024)] 
         public async Task<IActionResult> UploadAudio(IFormFile file)
         {
-            if (file == null || file.Length == 0) return BadRequest("Файл не выбран");
-
-            var ext = Path.GetExtension(file.FileName).ToLower();
-            var allowedExtensions = new[] { ".mp3", ".wav", ".ogg", ".m4a" };
-            if (!allowedExtensions.Contains(ext)) return BadRequest("Недопустимый формат аудио");
-
-            var fileName = $"{Guid.NewGuid()}{ext}";
-            var path = Path.Combine(_env.WebRootPath, "uploads", "audio", fileName);
-
-            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-
-            using (var stream = new FileStream(path, FileMode.Create))
-            {
-                await file.CopyToAsync(stream);
-            }
-
-            return Ok(new { Url = $"/uploads/audio/{fileName}" });
+            return await ProcessUploadAsync(file, "audio", new[] { ".mp3", ".wav", ".ogg", ".m4a" }, MaxAudioSize);
         }
 
         [HttpPost("video")]
+        [RequestSizeLimit(MaxVideoSize + 1024)]
         public async Task<IActionResult> UploadVideo(IFormFile file)
         {
-            if (file == null || file.Length == 0) return BadRequest("Файл не выбран");
-
-            var ext = Path.GetExtension(file.FileName).ToLower();
-            var allowedExtensions = new[] { ".mp4", ".webm", ".mov" };
-            if (!allowedExtensions.Contains(ext)) return BadRequest("Недопустимый формат видео");
-
-            var fileName = $"{Guid.NewGuid()}{ext}";
-            var path = Path.Combine(_env.WebRootPath, "uploads", "video", fileName);
-
-            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-
-            using (var stream = new FileStream(path, FileMode.Create))
-            {
-                await file.CopyToAsync(stream);
-            }
-
-            return Ok(new { Url = $"/uploads/video/{fileName}" });
+            return await ProcessUploadAsync(file, "video", new[] { ".mp4", ".webm", ".mov" }, MaxVideoSize);
         }
+
         [HttpPost("document")]
+        [RequestSizeLimit(MaxDocumentSize + 1024)]
         public async Task<IActionResult> UploadDocument(IFormFile file)
         {
-            if (file == null || file.Length == 0) return BadRequest("Файл не выбран");
-
-            var ext = Path.GetExtension(file.FileName).ToLower();
-            if (ext != ".pdf") return BadRequest("Разрешены только PDF файлы");
-
-            var fileName = $"{Guid.NewGuid()}{ext}";
-            var path = Path.Combine(_env.WebRootPath, "uploads", "documents", fileName);
-
-            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-
-            using (var stream = new FileStream(path, FileMode.Create))
-            {
-                await file.CopyToAsync(stream);
-            }
-
-            return Ok(new { Url = $"/uploads/documents/{fileName}" });
+            return await ProcessUploadAsync(file, "documents", new[] { ".pdf" }, MaxDocumentSize);
         }
-        [HttpPost("image")] 
+
+        [HttpPost("image")]
+        [RequestSizeLimit(MaxImageSize + 1024)]
         public async Task<IActionResult> UploadImage(IFormFile file)
+        {
+            return await ProcessUploadAsync(file, "images", new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg" }, MaxImageSize);
+        }
+
+        private async Task<IActionResult> ProcessUploadAsync(IFormFile file, string folderName, string[] allowedExtensions, long maxSize)
         {
             try
             {
                 if (file == null || file.Length == 0)
-                {
                     return BadRequest("Файл не выбран");
-                }
 
-                var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads", "images");
-                if (!Directory.Exists(uploadsFolder))
+                if (file.Length > maxSize)
                 {
-                    Directory.CreateDirectory(uploadsFolder);
+                    var maxMb = maxSize / (1024 * 1024);
+                    return BadRequest($"Файл слишком большой. Максимальный размер: {maxMb} МБ.");
                 }
 
-                var uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
+                var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+
+                if (!allowedExtensions.Contains(ext))
+                    return BadRequest($"Недопустимый формат файла. Разрешены: {string.Join(", ", allowedExtensions)}");
+
+                var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads", folderName);
+
+                Directory.CreateDirectory(uploadsFolder);
+
+                var uniqueFileName = $"{Guid.NewGuid()}{ext}";
                 var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
                 using (var fileStream = new FileStream(filePath, FileMode.Create))
@@ -99,13 +76,13 @@ namespace Blog10.Controllers
                     await file.CopyToAsync(fileStream);
                 }
 
-                var imageUrl = $"/uploads/images/{uniqueFileName}";
+                var fileUrl = $"/uploads/{folderName}/{uniqueFileName}";
 
-                return Ok(new { Url = imageUrl });
+                return Ok(new { Url = fileUrl });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Внутренняя ошибка сервера: {ex.Message}");
+                return StatusCode(500, "Внутренняя ошибка сервера при сохранении файла.");
             }
         }
     }

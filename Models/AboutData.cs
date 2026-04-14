@@ -1,24 +1,56 @@
-﻿namespace Blog10.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Blog10.Models
 {
     public class AboutData
     {
+        [Key]
         public int Id { get; set; }
 
-        public string HeroTitle { get; set; } = "Елена Тимофеева";
-        public string HeroSubtitle { get; set; } = "Логопед-педагог высшей категории";
-        public string ProfileImageUrl { get; set; } = "/img/me.jpg";
-        public string MainHeroImageUrl { get; set; } = "https://images.unsplash.com/photo-1544717305-2782549b5136?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80";
+        [MaxLength(100, ErrorMessage = "Тег слишком длинный")]
+        public string? HeroTag { get; set; } = "Логопед-педагог • Опыт 12 лет";
 
-        public string StatsExperience { get; set; } = "10+";
-        public string StatsChildren { get; set; } = "500+";
-        public string StatsCertificates { get; set; } = "30+";
+        [MaxLength(200)]
+        public string? HeroTitle { get; set; } = "Говорим красиво и уверенно!";
 
-        public string QuoteText { get; set; } = "Речь — это инструмент, с помощью которого мы открываем мир.";
-        public string QuoteAuthor { get; set; } = "Елена Тимофеева";
-        public string PrinciplesHtml { get; set; } = "<p>Индивидуальный подход и игровая форма.</p>";
+        [MaxLength(500)]
+        public string? HeroDescription { get; set; } = "Помогаю детям преодолеть речевые трудности через игру и доказательные методики.";
 
-        public string BioHtml { get; set; } = "";
-        public string EducationHtml { get; set; } = "";
-        public string SkillsHtml { get; set; } = "";
+        [MaxLength(500)]
+        public string? MainHeroImageUrl { get; set; } = "/img/default-hero.jpg"; 
+
+        [MaxLength(150)]
+        public string? AboutSectionTitle { get; set; } = "Мой подход к работе";
+
+        [MaxLength(300)]
+        public string? AboutSectionSubtitle { get; set; } = "Эффективное обучение в атмосфере доверия.";
+
+        public string? AboutBlocksJson { get; set; } = "[]";
+
+        [MaxLength(200)]
+        public string? HeroSubtitle { get; set; } = "Логопед-педагог высшей категории";
+
+        [MaxLength(500)]
+        public string? ProfileImageUrl { get; set; } = "/img/me.jpg";
+        [MaxLength(50)]
+        public string? StatsExperience { get; set; } = "10+";
+
+        [MaxLength(50)]
+        public string? StatsChildren { get; set; } = "500+";
+
+        [MaxLength(50)]
+        public string? StatsCertificates { get; set; } = "30+";
+        public string? AboutPageTitle { get; set; } = "Елена Тимофеева"; 
+
+        [MaxLength(1000)]
+        public string? QuoteText { get; set; } = "Речь — это инструмент, с помощью которого мы открываем мир.";
+
+        [MaxLength(100)]
+        public string? QuoteAuthor { get; set; } = "Мыслитель";
+
+        public string? PrinciplesHtml { get; set; } = "<p>Индивидуальный подход и игровая форма.</p>";
+        public string? BioHtml { get; set; } = "";
+        public string? EducationHtml { get; set; } = "";
+        public string? SkillsHtml { get; set; } = "";
     }
 }

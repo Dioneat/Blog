@@ -11,7 +11,7 @@ namespace Blog10.Services
         private readonly HttpClient _httpClient;
         private readonly AppDbContext _dbContext;
         private readonly SettingsService _settings;
-        private readonly AppLogService _logService; 
+        private readonly AppLogService _logService;
 
         public VkSyncService(HttpClient httpClient, AppDbContext dbContext, SettingsService settings, AppLogService logService)
         {
@@ -28,10 +28,7 @@ namespace Blog10.Services
             var version = "5.131";
 
             if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(domain))
-            {
-                await _logService.LogWarningAsync("VK Sync", "Синхронизация отменена: не настроены сервисный токен или домен.");
-                return (0, "Ключи ВК (Сервисный токен или Домен) не настроены в параметрах.");
-            }
+                return (0, "Ключи ВК не настроены.");
 
             string url = $"https://api.vk.com/method/wall.get?domain={domain}&count={count}&v={version}&access_token={token}";
 
@@ -44,19 +41,22 @@ namespace Blog10.Services
                 if (doc.RootElement.TryGetProperty("error", out var errorProp))
                 {
                     string errMsg = errorProp.GetProperty("error_msg").GetString() ?? "Неизвестная ошибка";
-                    await _logService.LogErrorAsync("VK Sync", $"Ошибка API ВКонтакте при загрузке стены: {errMsg}");
                     return (0, $"Ошибка ВК API: {errMsg}");
                 }
 
                 var items = doc.RootElement.GetProperty("response").GetProperty("items");
                 int importedCount = 0;
 
+                var existingVkIds = await _dbContext.Articles
+                    .Where(a => a.VkPostId != null)
+                    .Select(a => a.VkPostId.Value)
+                    .ToListAsync();
+
                 foreach (var item in items.EnumerateArray())
                 {
                     long vkId = item.GetProperty("id").GetInt64();
 
-                    bool exists = await _dbContext.Articles.AnyAsync(a => a.VkPostId == vkId);
-                    if (exists) continue;
+                    if (existingVkIds.Contains(vkId)) continue;
 
                     string text = item.GetProperty("text").GetString() ?? "";
                     if (string.IsNullOrWhiteSpace(text)) continue;
@@ -80,14 +80,15 @@ namespace Blog10.Services
                     importedCount++;
                 }
 
-                await _dbContext.SaveChangesAsync();
+                if (importedCount > 0)
+                {
+                    await _dbContext.SaveChangesAsync();
+                }
 
-                await _logService.LogInfoAsync("VK Sync", $"Синхронизация завершена. Загружено новых постов: {importedCount}");
                 return (importedCount, $"Загружено новых постов: {importedCount}. Проверьте их в черновиках.");
             }
             catch (Exception ex)
             {
-                await _logService.LogErrorAsync("VK Sync", "Системный сбой при попытке загрузить посты из ВКонтакте", ex);
                 return (0, $"Системная ошибка: {ex.Message}");
             }
         }

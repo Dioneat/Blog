@@ -143,6 +143,11 @@ else
 
     private async Task OnSubmit()
     {
+        if (editorCards.Count == 0)
+        {
+            Notification.Notify(NotificationSeverity.Error, "Ошибка", "В наборе должна быть хотя бы одна карточка!");
+            return;
+        }
         editSet.CardsJson = JsonSerializer.Serialize(editorCards);
         DbContext.FlashcardSets.Update(editSet);
         await DbContext.SaveChangesAsync();

@@ -33,22 +33,36 @@ namespace Blog10.Services
             }
 
             var result = _passwordHasher.VerifyHashedPassword(admin, admin.Password, password);
+
+            if (result == PasswordVerificationResult.SuccessRehashNeeded)
+            {
+                admin.Password = _passwordHasher.HashPassword(admin, password);
+                await _dbContext.SaveChangesAsync();
+                return true;
+            }
+
             return result == PasswordVerificationResult.Success;
         }
+
         public async Task<string> GetAdminUsernameAsync()
         {
-            var admin = await _dbContext.AdminAccounts.FirstOrDefaultAsync();
+            var admin = await _dbContext.AdminAccounts.AsNoTracking().FirstOrDefaultAsync();
             return admin?.Username ?? "admin";
         }
+
         public async Task UpdateAdminPasswordAsync(string username, string newPassword)
         {
             var admin = await _dbContext.AdminAccounts.FirstOrDefaultAsync();
-            if (admin != null)
+
+            if (admin == null)
             {
-                admin.Username = username;
-                admin.Password = _passwordHasher.HashPassword(admin, newPassword);
-                await _dbContext.SaveChangesAsync();
+                throw new InvalidOperationException("Учетная запись администратора не найдена в базе данных.");
             }
+
+            admin.Username = username;
+            admin.Password = _passwordHasher.HashPassword(admin, newPassword);
+
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

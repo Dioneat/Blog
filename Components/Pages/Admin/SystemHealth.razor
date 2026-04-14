@@ -2,23 +2,22 @@
 @layout AdminLayout
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 
-@using Blog10.Data
-@using Blog10.Models
-@using Microsoft.EntityFrameworkCore
 @using System.Diagnostics
-@using Radzen
-@using Radzen.Blazor
+@using System.Text.Json
+
 
 @inject AppDbContext DbContext
 @inject NavigationManager NavManager
+@inject DialogService DialogService
+@inject NotificationService Notification
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Состояние системы</PageTitle>
 
 <RadzenText TextStyle="TextStyle.H3" TagName="TagName.H1" class="rz-mb-4">Состояние системы</RadzenText>
 
-@* --- ВЕРХНЯЯ ПАНЕЛЬ: МЕТРИКИ СЕРВЕРА --- *@
 <div class="row rz-mb-4">
-    <div class="col-md-3">
+    <div class="col-md-3 rz-mb-3 rz-mb-md-0">
         <RadzenCard class="rz-p-4 rz-text-align-center" style="border-bottom: 4px solid var(--rz-primary);">
             <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-color-secondary">Использование ОЗУ</RadzenText>
             <RadzenText TextStyle="TextStyle.H4" class="rz-m-0">
@@ -26,7 +25,7 @@
             </RadzenText>
         </RadzenCard>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-3 rz-mb-3 rz-mb-md-0">
         <RadzenCard class="rz-p-4 rz-text-align-center" style="border-bottom: 4px solid var(--rz-info);">
             <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-color-secondary">Аптайм (Без перезагрузок)</RadzenText>
             <RadzenText TextStyle="TextStyle.H4" class="rz-m-0">
@@ -34,7 +33,7 @@
             </RadzenText>
         </RadzenCard>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-3 rz-mb-3 rz-mb-md-0">
         <RadzenCard class="rz-p-4 rz-text-align-center" style="border-bottom: 4px solid var(--rz-success);">
             <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-color-secondary">Всего логов</RadzenText>
             <RadzenText TextStyle="TextStyle.H4" class="rz-m-0">
@@ -51,10 +50,9 @@
         </RadzenCard>
     </div>
 </div>
-
-@* --- КНОПКИ УПРАВЛЕНИЯ --- *@
-<RadzenStack Orientation="Orientation.Horizontal" class="rz-mb-4">
+<RadzenStack Orientation="Orientation.Horizontal" class="rz-mb-4" Gap="1rem" Wrap="FlexWrap.Wrap">
     <RadzenButton Text="Обновить данные" Icon="refresh" Click="LoadData" ButtonStyle="ButtonStyle.Primary" />
+    <RadzenButton Text="Выгрузить в JSON" Icon="file_download" Click="ExportLogsToJson" ButtonStyle="ButtonStyle.Info" Variant="Variant.Outlined" />
     <RadzenButton Text="Очистить логи" Icon="delete_sweep" Click="ClearLogs" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" />
 </RadzenStack>
 
@@ -104,33 +102,42 @@
     </Columns>
 </RadzenDataGrid>
 
-@* Модальное окно для деталей ошибки *@
 @if (selectedLog != null)
 {
-    <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);" tabindex="-1">
+    <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.6);" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header rz-background-color-danger-lighter">
-                    <h5 class="modal-title"><i class="fa-solid fa-bug"></i> Детали ошибки</h5>
+            <div class="modal-content" style="border-radius: 12px; border: none; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                <div class="modal-header rz-background-color-danger-lighter" style="border-bottom: 2px solid var(--rz-danger);">
+                    <h5 class="modal-title"><i class="fa-solid fa-bug rz-mr-2" style="color: var(--rz-danger);"></i> Детали ошибки</h5>
                     <button type="button" class="btn-close" @onclick="() => selectedLog = null"></button>
                 </div>
-                <div class="modal-body">
-                    <p><strong>Источник:</strong> @selectedLog.Source</p>
-                    <p><strong>Сообщение:</strong> @selectedLog.Message</p>
-                    <hr />
-                    <pre style="background: #f4f4f4; padding: 15px; border-radius: 5px; font-size: 0.85rem; max-height: 400px; overflow-y: auto;">@selectedLog.ExceptionDetails</pre>
+                <div class="modal-body rz-p-4">
+                    <p class="rz-mb-2"><strong>Источник:</strong> <RadzenBadge BadgeStyle="BadgeStyle.Light" Text="@selectedLog.Source" /></p>
+                    <p class="rz-mb-4"><strong>Сообщение:</strong> @selectedLog.Message</p>
+                    <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-color-secondary rz-mb-2">Трассировка стека (Stack Trace):</RadzenText>
+                    <pre style="background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 8px; font-size: 0.85rem; max-height: 400px; overflow-y: auto; white-space: pre-wrap;">@selectedLog.ExceptionDetails</pre>
                 </div>
             </div>
         </div>
     </div>
 }
 
+<script>
+    window.downloadJsonFile = function (fileName, base64String) {
+        const link = document.createElement('a');
+        link.download = fileName;
+        link.href = 'data:application/json;charset=utf-8;base64,' + base64String;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+
 @code {
     private List<SystemLog> logs = new();
     private RadzenDataGrid<SystemLog>? logsGrid;
     private SystemLog? selectedLog;
 
-    // Метрики
     private string memoryUsage = "0";
     private string uptime = "0ч 0м";
     private int totalLogs = 0;
@@ -143,15 +150,27 @@
 
     private async Task LoadData()
     {
-        logs = await DbContext.SystemLogs.OrderByDescending(l => l.CreatedAt).ToListAsync();
-        totalLogs = logs.Count;
-        errorCount = logs.Count(l => l.Level == "Error");
+        totalLogs = await DbContext.SystemLogs.CountAsync();
+        errorCount = await DbContext.SystemLogs.CountAsync(l => l.Level == "Error");
 
-        var process = Process.GetCurrentProcess();
-        memoryUsage = (process.WorkingSet64 / (1024 * 1024)).ToString(); 
-        
-        var timeSpan = DateTime.Now - process.StartTime;
-        uptime = $"{(int)timeSpan.TotalHours}ч {timeSpan.Minutes}м";
+        logs = await DbContext.SystemLogs
+            .AsNoTracking()
+            .OrderByDescending(l => l.CreatedAt)
+            .ToListAsync();
+
+        try
+        {
+            var process = Process.GetCurrentProcess();
+            memoryUsage = (process.WorkingSet64 / (1024 * 1024)).ToString();
+            
+            var timeSpan = DateTime.Now - process.StartTime;
+            uptime = $"{(int)timeSpan.TotalHours}ч {timeSpan.Minutes}м";
+        }
+        catch
+        {
+            memoryUsage = "N/A";
+            uptime = "N/A";
+        }
 
         if (logsGrid != null) await logsGrid.Reload();
     }
@@ -163,8 +182,49 @@
 
     private async Task ClearLogs()
     {
-        DbContext.SystemLogs.RemoveRange(DbContext.SystemLogs);
-        await DbContext.SaveChangesAsync();
-        await LoadData();
+        var result = await DialogService.Confirm(
+            "Вы уверены, что хотите безвозвратно удалить все логи системы?",
+            "Очистка логов",
+            new ConfirmOptions() { OkButtonText = "Да, удалить", CancelButtonText = "Отмена" });
+
+        if (result == true)
+        {
+            await DbContext.Database.ExecuteSqlRawAsync("DELETE FROM SystemLogs");
+            
+            Notification.Notify(NotificationSeverity.Success, "Успех", "Логи очищены.");
+            await LoadData();
+        }
+    }
+
+    private async Task ExportLogsToJson()
+    {
+        if (logs == null || !logs.Any())
+        {
+            Notification.Notify(NotificationSeverity.Warning, "Внимание", "В базе нет логов для выгрузки.");
+            return;
+        }
+
+        try
+        {
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            };
+            
+            var jsonString = JsonSerializer.Serialize(logs, options);
+            var bytes = System.Text.Encoding.UTF8.GetBytes(jsonString);
+            var base64 = Convert.ToBase64String(bytes);
+            
+            var fileName = $"SystemLogs_{DateTime.Now:yyyy_MM_dd_HH_mm}.json";
+
+            await JSRuntime.InvokeVoidAsync("downloadJsonFile", fileName, base64);
+            
+            Notification.Notify(NotificationSeverity.Success, "Скачивание началось", "Логи успешно экспортированы.");
+        }
+        catch (Exception ex)
+        {
+            Notification.Notify(NotificationSeverity.Error, "Ошибка выгрузки", ex.Message);
+        }
     }
 }

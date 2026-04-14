@@ -9,6 +9,7 @@
 
 @inject AppDbContext DbContext
 @inject NavigationManager NavManager
+<PageTitle>Библиотека карточек</PageTitle>
 
 <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-4">
     <RadzenText TextStyle="TextStyle.H3" class="rz-m-0">Библиотека карточек</RadzenText>
@@ -38,5 +39,5 @@ else
 
 @code {
     List<FlashcardSet>? flashcardSets;
-    protected override async Task OnInitializedAsync() => flashcardSets = await DbContext.FlashcardSets.ToListAsync();
+    protected override async Task OnInitializedAsync() => flashcardSets = flashcardSets = await DbContext.FlashcardSets.AsNoTracking().OrderByDescending(f => f.CreatedAt).ToListAsync();
 }

@@ -3,18 +3,18 @@
 
 <section id="home" class="section hero">
     <div class="hero-content fade-up">
-        <span class="hero-tag">Логопед-педагог • Опыт 12 лет</span>
-        <h1>Говорим красиво и уверенно! Современная <span class="highlight">логопедия</span> с любовью к детям.</h1>
-        <p>Помогаю детям преодолеть речевые трудности через игру и доказательные методики. Индивидуальный маршрут развития для каждого ребенка.</p>
+        <span class="hero-tag">@aboutData?.HeroTag</span>
+        <h1>@((MarkupString)HighlightText(aboutData?.HeroTitle))</h1>
+        <p>@aboutData?.HeroDescription</p>
         <div style="display: flex; gap: 15px; flex-wrap: wrap;">
             <a href="#contacts" class="cta-btn">Записаться на диагностику</a>
-            <a href="#about" class="cta-btn" style="background: var(--accent-light); color: var(--primary-color); box-shadow: none;">Подробнее обо мне</a>
+            <a href="/about" class="cta-btn" style="background: var(--accent-light); color: var(--primary-color); box-shadow: none;">Подробнее обо мне</a>
         </div>
     </div>
 
     <div class="hero-image-container fade-up">
         <div class="floating-badge badge-1">
-            <i class="fa-solid fa-star" style="color: #FFD700;"></i> 500+ счастливых семей
+            <i class="fa-solid fa-star" style="color: #FFD700;"></i> 20+ счастливых семей
         </div>
         <div class="floating-badge badge-2">
             <i class="fa-solid fa-certificate" style="color: var(--primary-color);"></i> Сертифицированный эксперт
@@ -25,12 +25,29 @@
         </div>
     </div>
 </section>
-
 @code {
     private Blog10.Models.AboutData? aboutData;
 
     protected override async Task OnInitializedAsync()
     {
         aboutData = await AboutService.GetAboutDataAsync();
+    }
+
+    private string HighlightText(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return "";
+        
+        var words = text.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (words.Length <= 1) return System.Net.WebUtility.HtmlEncode(text);
+
+        for (int i = 0; i < words.Length; i++)
+        {
+            words[i] = System.Net.WebUtility.HtmlEncode(words[i]);
+        }
+
+        int lastIndex = words.Length - 1;
+        words[lastIndex] = $"<span style='color: var(--primary-color);'>{words[lastIndex]}</span>";
+
+        return string.Join(" ", words);
     }
 }

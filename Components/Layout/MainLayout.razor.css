@@ -1,0 +1,108 @@
+﻿main {
+    margin-top: var(--header-height);
+}
+
+.a11y-panel {
+    position: fixed;
+    top: var(--header-height);
+    right: -320px;
+    width: 300px;
+    background: var(--card-bg);
+    border-left: 4px solid var(--primary-color);
+    padding: 25px;
+    box-shadow: var(--shadow-md);
+    z-index: 999;
+    transition: var(--transition);
+    border-bottom-left-radius: 20px;
+}
+
+    .a11y-panel.open {
+        right: 0;
+    }
+
+    .a11y-panel h3 {
+        margin-bottom: 20px;
+        font-size: 1.1rem;
+        color: var(--primary-color);
+    }
+
+.a11y-control {
+    margin-bottom: 20px;
+}
+
+    .a11y-control label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+.a11y-btn-group {
+    display: flex;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--accent-light);
+}
+
+.a11y-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: var(--bg-color);
+    color: var(--text-color);
+    cursor: pointer;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+    .a11y-btn:not(:last-child) {
+        border-right: 1px solid var(--accent-light);
+    }
+
+    .a11y-btn:hover {
+        background: var(--accent-light);
+    }
+
+#scrollToTop {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 55px;
+    height: 55px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 10px 20px rgba(27, 84, 245, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    z-index: 900;
+    transition: var(--transition);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+}
+
+    #scrollToTop.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    #scrollToTop:hover {
+        transform: translateY(-5px);
+        background: var(--primary-hover);
+    }
+
+@media (max-width: 768px) {
+    .a11y-panel {
+        width: 100%;
+        right: -100%;
+        border-left: none;
+        border-top: 4px solid var(--primary-color);
+        border-radius: 0 0 20px 20px;
+    }
+}

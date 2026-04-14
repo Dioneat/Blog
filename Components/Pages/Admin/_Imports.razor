@@ -1,5 +1,10 @@
 ﻿@using Microsoft.AspNetCore.Authorization
 
-@attribute [Authorize]
-
+@attribute [Authorize(Roles = "Admin")]
 @layout AdminLayout
+@using Radzen
+@using Radzen.Blazor
+@using Blog10.Models
+@using Blog10.Data
+@using Blog10.Services
+@using Microsoft.EntityFrameworkCore

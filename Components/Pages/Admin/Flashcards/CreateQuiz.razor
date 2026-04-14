@@ -124,19 +124,32 @@
 
     private async Task OnSubmit()
     {
-        if (string.IsNullOrWhiteSpace(newQuiz.Title))
+        if (string.IsNullOrWhiteSpace(newQuiz.Title)) 
         {
             Notification.Notify(NotificationSeverity.Warning, "Внимание", "Укажите заголовок теста");
             return;
         }
 
+        if (editorQuestions.Count == 0)
+        {
+            Notification.Notify(NotificationSeverity.Error, "Ошибка", "Тест должен содержать хотя бы один вопрос!");
+            return;
+        }
+
+        if (editorQuestions.Any(q => string.IsNullOrWhiteSpace(q.Text) || q.Answers.Count < 2))
+        {
+            Notification.Notify(NotificationSeverity.Error, "Ошибка", "Заполните тексты всех вопросов и добавьте минимум 2 варианта ответа.");
+            return;
+        }
+        // ---------------------------
+
         newQuiz.QuestionsJson = JsonSerializer.Serialize(editorQuestions);
         newQuiz.ResultsJson = JsonSerializer.Serialize(editorResults);
 
-        DbContext.Quizzes.Add(newQuiz);
+        DbContext.Quizzes.Add(newQuiz); 
         await DbContext.SaveChangesAsync();
         
-        Notification.Notify(NotificationSeverity.Success, "Успех", "Тест успешно создан!");
+        Notification.Notify(NotificationSeverity.Success, "Успех", "Тест успешно сохранен!");
         NavManager.NavigateTo("/admin/quizzes");
     }
 }

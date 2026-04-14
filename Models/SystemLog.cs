@@ -9,12 +9,16 @@ namespace Blog10.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        // Тип: Info, Warning, Error
+        [Required]
+        [MaxLength(20)] 
         public string Level { get; set; } = "Info";
 
-        // "VK Sync", "Telegram", "System"
+        [Required]
+        [MaxLength(100)] // "VK Sync", "Telegram API", "System"
         public string Source { get; set; } = string.Empty;
 
+        [Required]
+        [MaxLength(1000)]
         public string Message { get; set; } = string.Empty;
 
         public string? ExceptionDetails { get; set; }

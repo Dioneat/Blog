@@ -20,4 +20,10 @@
     <PackageReference Include="Radzen.Blazor" Version="10.1.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\uploads\documents\" />
+    <Folder Include="wwwroot\uploads\images\" />
+    <Folder Include="wwwroot\uploads\video\" />
+  </ItemGroup>
+
 </Project>

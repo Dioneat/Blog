@@ -6,17 +6,20 @@ namespace Blog10.Services
 {
     public class AppLogService
     {
-        private readonly AppDbContext _context;
+        private readonly IServiceScopeFactory _scopeFactory;
 
-        public AppLogService(AppDbContext context)
+        public AppLogService(IServiceScopeFactory scopeFactory)
         {
-            _context = context;
+            _scopeFactory = scopeFactory;
         }
 
         public async Task LogAsync(string level, string source, string message, string? exceptionDetails = null)
         {
             try
             {
+                using var scope = _scopeFactory.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
                 var log = new SystemLog
                 {
                     Level = level,
@@ -26,20 +29,20 @@ namespace Blog10.Services
                     CreatedAt = DateTime.Now
                 };
 
-                _context.SystemLogs.Add(log);
+                context.SystemLogs.Add(log);
 
-                var count = await _context.SystemLogs.CountAsync();
+                var count = await context.SystemLogs.CountAsync();
                 if (count >= 1000)
                 {
-                    var oldestLogs = await _context.SystemLogs
+                    var oldestLogs = await context.SystemLogs
                         .OrderBy(l => l.CreatedAt)
-                        .Take(count - 900) 
+                        .Take(count - 900)
                         .ToListAsync();
 
-                    _context.SystemLogs.RemoveRange(oldestLogs);
+                    context.SystemLogs.RemoveRange(oldestLogs);
                 }
 
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
             }
             catch
             {

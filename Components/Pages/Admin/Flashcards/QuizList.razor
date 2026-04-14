@@ -56,7 +56,7 @@
 
     private async Task LoadQuizzes()
     {
-        quizzes = await DbContext.Quizzes.OrderByDescending(q => q.CreatedAt).ToListAsync();
+        quizzes = await DbContext.Quizzes.AsNoTracking().OrderByDescending(q => q.CreatedAt).ToListAsync();
     }
 
     private async Task DeleteQuiz(Quiz quiz)
