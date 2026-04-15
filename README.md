@@ -21,6 +21,7 @@
 
 Изначально проект задумывался как блог, но архитектурно в него уже заложен вектор развития в сторону **полноценной образовательной онлайн-платформы**.
 
+Ссылка на сайт: https://elenatimofeeva.ru/
 ---
 
 ## Эволюция проекта
@@ -72,15 +73,20 @@
 - создание и настройка новых блоков;
 - управление структурой контентных страниц;
 - подготовка материалов через удобный интерфейс.
+<img width="996" height="818" alt="image" src="https://github.com/user-attachments/assets/e65776ee-ad10-447a-b9a4-0fb29bd72c22" />
+<img width="1846" height="799" alt="image" src="https://github.com/user-attachments/assets/8f579963-7ef8-4f01-b4ce-d4e8f0fdd95d" />
 
 ### Работа со статьями
 Статьи поддерживают расширенный функционал:
+<img width="1886" height="864" alt="image" src="https://github.com/user-attachments/assets/fb82e420-679b-4454-8c43-8189daf40b08" />
 
 - прикрепление файлов;
 - вставку аудио;
 - вставку видео;
 - создание и привязку тестов;
 - создание и привязку карточек к конкретным публикациям.
+<img width="1894" height="821" alt="image" src="https://github.com/user-attachments/assets/af2de38d-4903-486b-bd8c-6a7e77c095d8" />
+<img width="1887" height="771" alt="image" src="https://github.com/user-attachments/assets/46309c6d-eaee-4058-9a8d-2f09dce63dfd" />
 
 ### Черновики и автосохранение
 - поддержка черновиков;
@@ -93,6 +99,8 @@
 - **Telegram**
 
 Для этого предусмотрена отдельная вкладка с настройкой внешних интеграций.  
+<img width="1197" height="852" alt="image" src="https://github.com/user-attachments/assets/ab985a2e-126a-4ae9-8a92-dcabf0e5b2fd" />
+
 При публикации новой статьи материал может автоматически отправляться в выбранные соцсети: <img width="1905" height="860" alt="image" src="https://github.com/user-attachments/assets/1d5c1581-e1a9-4d67-bb5f-bd48c58da552" />
 
 
@@ -106,6 +114,7 @@
 
 ### Логи и состояние системы
 Так как проект пока работает в формате блога и рассчитан на минимальную серверную конфигурацию, в нем реализована упрощенная система:
+<img width="1873" height="768" alt="image" src="https://github.com/user-attachments/assets/69d3c149-91ca-4858-ae5c-ccdbc3798b7a" />
 
 - логирования;
 - отслеживания состояния сервера;
