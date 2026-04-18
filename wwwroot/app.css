@@ -124,7 +124,7 @@ header {
     display: flex;
     align-items: center;
     gap: 10px;
-    z-index: 1001;
+    z-index: 999;
 }
 
 .mobile-only-cabinet {
@@ -152,7 +152,7 @@ header {
 
     .nav-links a {
         text-decoration: none;
-        color: var(--text-color);
+        color: var(--primary-color);
         font-weight: 600;
         font-size: 0.95rem;
         transition: var(--transition);
@@ -160,8 +160,9 @@ header {
         padding: 5px 0;
     }
 
-        .nav-links a:hover, .nav-links a.active-link {
-            color: var(--primary-color);
+        .nav-links a:hover,
+        .nav-links a.active-link {
+            color: var(--primary-hover);
         }
 
         .nav-links a::after {
@@ -928,7 +929,71 @@ footer {
         font-size: 1.5rem;
     }
 }
+/* --- СТИЛИ ДЛЯ ПАНЕЛИ ВОССТАНОВЛЕНИЯ СВЯЗИ BLAZOR --- */
+#components-reconnect-modal {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 99999;
+    display: none; /* Скрыто по умолчанию */
+}
 
+/* Окно самой карточки */
+.reconnect-dialog {
+    background: var(--card-bg, #ffffff);
+    padding: 20px 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    text-align: center;
+    border: 1px solid var(--accent-light, #eef2ff);
+    display: none; /* Скрываем все внутренние состояния */
+    animation: dropDown 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes dropDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Логика переключения классов самим Blazor */
+#components-reconnect-modal.components-reconnect-show,
+#components-reconnect-modal.components-reconnect-failed,
+#components-reconnect-modal.components-reconnect-rejected {
+    display: block;
+}
+
+    #components-reconnect-modal.components-reconnect-show .show-dialog {
+        display: block;
+    }
+
+    #components-reconnect-modal.components-reconnect-failed .failed-dialog {
+        display: block;
+    }
+
+    #components-reconnect-modal.components-reconnect-rejected .rejected-dialog {
+        display: block;
+    }
+
+/* Затемнение экрана (по желанию) */
+#components-reconnect-modal::before {
+    content: '';
+    position: fixed;
+    top: -20px;
+    left: -50vw;
+    width: 200vw;
+    height: 200vh;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(3px);
+    z-index: -1;
+}
 .blog-placeholder {
     width: 100%;
     height: 100%;

@@ -2,17 +2,21 @@
 @layout AdminLayout
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 
-@implements IDisposable
 @using System.Text.Json
 @using System.Timers
-
+@using Blog10.Models
+@using Blog10.Data
 @using Blog10.Utils
+@using Microsoft.EntityFrameworkCore
+@using Radzen
+@using Radzen.Blazor
 
 @inject NotificationService Notification
 @inject AppDbContext DbContext
 @inject NavigationManager NavManager
 @inject IJSRuntime JSRuntime
 @inject Blog10.Services.FileService FileService
+@implements IDisposable
 
 <PageTitle>Редактирование статьи</PageTitle>
 
@@ -59,94 +63,106 @@ else
                 </RadzenStack>
             </RadzenCard>
 
-            @* --- 2. МЕДИА И ФАЙЛЫ --- *@
+            @* --- 2. МЕДИА И ФАЙЛЫ (СВОРАЧИВАЕМЫЙ БЛОК) --- *@
             <RadzenCard class="rz-p-4" style="border-radius: 12px; border-left: 5px solid var(--rz-info);">
-                <RadzenText TextStyle="TextStyle.H6" class="rz-mb-3"><i class="fa-solid fa-photo-film rz-mr-2"></i> Медиа и файлы</RadzenText>
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween"
+                             class="section-header-toggle" @onclick="() => isMediaExpanded = !isMediaExpanded">
+                    <RadzenText TextStyle="TextStyle.H6" class="rz-m-0"><i class="fa-solid fa-photo-film rz-mr-2"></i> Медиа и файлы</RadzenText>
+                    <i class="fa-solid fa-chevron-down chevron-icon @(isMediaExpanded ? "rotated" : "")"></i>
+                </RadzenStack>
                 
-                <div class="row">
-                    <div class="col-12 col-lg-6 rz-mb-4">
-                        <RadzenStack Gap="0.5rem">
-                            <RadzenText TextStyle="TextStyle.Subtitle2">Титульное изображение (Обложка)</RadzenText>
-                            <RadzenUpload Url="api/upload/image" Accept="image/*" Complete="OnUploadComplete" style="width: 100%;" ChooseText="Выбрать обложку..." />
-                            @if (!string.IsNullOrEmpty(editPost.CoverImageUrl))
-                            {
-                                <div style="margin-top: 10px;">
-                                    <img src="@editPost.CoverImageUrl" alt="Предпросмотр обложки" style="width: 100%; height: 180px; object-fit: cover; border-radius: 8px; border: 1px solid var(--rz-secondary-light);" />
-                                </div>
-                            }
-                        </RadzenStack>
-                    </div>
-                    
-                    <div class="col-12 col-lg-6">
-                        <RadzenStack Gap="1rem">
-                            <div class="rz-p-3 rz-background-color-warning-lighter rz-border-radius-2">
-                                <RadzenText TextStyle="TextStyle.Subtitle2">Аудио-вставка</RadzenText>
-                                <RadzenUpload Url="api/upload/audio" Accept="audio/*" Complete=@OnAudioUploadComplete ChooseText="Загрузить Аудио" style="width: 100%;" />
-                                @if (!string.IsNullOrEmpty(editPost.MainAudioUrl))
+                <div class="expandable-section @(isMediaExpanded ? "expanded" : "")">
+                    <div class="row rz-pt-3">
+                        <div class="col-12 col-lg-6 rz-mb-4">
+                            <RadzenStack Gap="0.5rem">
+                                <RadzenText TextStyle="TextStyle.Subtitle2">Титульное изображение (Обложка)</RadzenText>
+                                <RadzenUpload Url="api/upload/image" Accept="image/*" Complete="OnUploadComplete" style="width: 100%;" ChooseText="Выбрать обложку..." />
+                                @if (!string.IsNullOrEmpty(editPost.CoverImageUrl))
                                 {
-                                    <div class="rz-mt-2" style="display: flex; align-items: center; justify-content: space-between; background: white; padding: 10px; border-radius: 8px;">
-                                        <audio controls src="@editPost.MainAudioUrl" style="height: 30px; width: 80%;"></audio>
-                                        <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Text" Click="RemoveAudio" title="Открепить" />
+                                    <div style="margin-top: 10px;">
+                                        <img src="@editPost.CoverImageUrl" alt="Предпросмотр обложки" style="width: 100%; height: 180px; object-fit: cover; border-radius: 8px; border: 1px solid var(--rz-secondary-light);" />
                                     </div>
                                 }
-                            </div>
-
-                            <div class="rz-p-3 rz-background-color-success-lighter rz-border-radius-2">
-                                <RadzenText TextStyle="TextStyle.Subtitle2">Видео-вставка</RadzenText>
-                                <RadzenUpload Url="api/upload/video" Accept="video/*" Complete=@OnVideoUploadComplete ChooseText="Загрузить Видео" style="width: 100%;" />
-                                @if (!string.IsNullOrEmpty(editPost.MainVideoUrl))
-                                {
-                                    <div class="rz-mt-2" style="display: flex; align-items: center; justify-content: space-between; background: white; padding: 10px; border-radius: 8px;">
-                                        <span style="color: var(--rz-success-dark);"><i class="fa-solid fa-video rz-mr-2"></i> Видео прикреплено</span>
-                                        <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Text" Click="RemoveVideo" title="Открепить" />
-                                    </div>
-                                }
-                            </div>
-                        </RadzenStack>
-                    </div>
-                </div>
-
-                <RadzenStack Gap="0.5rem" class="rz-mt-4 rz-p-3 rz-background-color-info-lighter rz-border-radius-2">
-                    <RadzenText TextStyle="TextStyle.Subtitle2">Полезный материал (PDF)</RadzenText>
-                    <div class="row">
-                        <div class="col-12 col-md-6 rz-mb-2 rz-mb-md-0">
-                            <RadzenFormField Text="Название файла" style="width: 100%;">
-                                <RadzenTextBox @bind-Value="editPost.FileAttachmentName" Placeholder="Например: Памятка по артикуляции" />
-                            </RadzenFormField>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <RadzenUpload Url="api/upload/document" Accept="application/pdf" Complete=@OnDocumentUploadComplete ChooseText="Выбрать PDF-файл" style="width: 100%; height: 40px;" />
-                        </div>
-                    </div>
-                    @if (!string.IsNullOrEmpty(editPost.FileAttachmentUrl))
-                    {
-                        <div class="rz-mt-2" style="display: flex; align-items: center; justify-content: space-between; background: white; padding: 10px; border-radius: 8px;">
-                            <span style="color: var(--rz-info-dark);"><i class="fa-solid fa-file-pdf rz-mr-2"></i> @(string.IsNullOrEmpty(editPost.FileAttachmentName) ? "Документ прикреплен" : editPost.FileAttachmentName)</span>
-                            <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
-                                <a href="@editPost.FileAttachmentUrl" target="_blank" class="rz-button rz-button-sm rz-variant-flat rz-light"><i class="fa-solid fa-eye"></i></a>
-                                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Text" Click="RemoveDocument" title="Открепить файл" />
                             </RadzenStack>
                         </div>
-                    }
-                </RadzenStack>
+                        
+                        <div class="col-12 col-lg-6">
+                            <RadzenStack Gap="1rem">
+                                <div class="rz-p-3 rz-background-color-warning-lighter rz-border-radius-2">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2">Аудио-вставка</RadzenText>
+                                    <RadzenUpload Url="api/upload/audio" Accept="audio/*" Complete=@OnAudioUploadComplete ChooseText="Загрузить Аудио" style="width: 100%;" />
+                                    @if (!string.IsNullOrEmpty(editPost.MainAudioUrl))
+                                    {
+                                        <div class="rz-mt-2" style="display: flex; align-items: center; justify-content: space-between; background: white; padding: 10px; border-radius: 8px;">
+                                            <audio controls src="@editPost.MainAudioUrl" style="height: 30px; width: 80%;"></audio>
+                                            <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Text" Click="RemoveAudio" title="Открепить" />
+                                        </div>
+                                    }
+                                </div>
+
+                                <div class="rz-p-3 rz-background-color-success-lighter rz-border-radius-2">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2">Видео-вставка</RadzenText>
+                                    <RadzenUpload Url="api/upload/video" Accept="video/*" Complete=@OnVideoUploadComplete ChooseText="Загрузить Видео" style="width: 100%;" />
+                                    @if (!string.IsNullOrEmpty(editPost.MainVideoUrl))
+                                    {
+                                        <div class="rz-mt-2" style="display: flex; align-items: center; justify-content: space-between; background: white; padding: 10px; border-radius: 8px;">
+                                            <span style="color: var(--rz-success-dark);"><i class="fa-solid fa-video rz-mr-2"></i> Видео прикреплено</span>
+                                            <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Text" Click="RemoveVideo" title="Открепить" />
+                                        </div>
+                                    }
+                                </div>
+                            </RadzenStack>
+                        </div>
+                    </div>
+
+                    <RadzenStack Gap="0.5rem" class="rz-mt-4 rz-p-3 rz-background-color-info-lighter rz-border-radius-2">
+                        <RadzenText TextStyle="TextStyle.Subtitle2">Полезный материал (PDF)</RadzenText>
+                        <div class="row">
+                            <div class="col-12 col-md-6 rz-mb-2 rz-mb-md-0">
+                                <RadzenFormField Text="Название файла" style="width: 100%;">
+                                    <RadzenTextBox @bind-Value="editPost.FileAttachmentName" Placeholder="Например: Памятка по артикуляции" />
+                                </RadzenFormField>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <RadzenUpload Url="api/upload/document" Accept="application/pdf" Complete=@OnDocumentUploadComplete ChooseText="Выбрать PDF-файл" style="width: 100%; height: 40px;" />
+                            </div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(editPost.FileAttachmentUrl))
+                        {
+                            <div class="rz-mt-2" style="display: flex; align-items: center; justify-content: space-between; background: white; padding: 10px; border-radius: 8px;">
+                                <span style="color: var(--rz-info-dark);"><i class="fa-solid fa-file-pdf rz-mr-2"></i> @(string.IsNullOrEmpty(editPost.FileAttachmentName) ? "Документ прикреплен" : editPost.FileAttachmentName)</span>
+                                <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+                                    <a href="@editPost.FileAttachmentUrl" target="_blank" class="rz-button rz-button-sm rz-variant-flat rz-light"><i class="fa-solid fa-eye"></i></a>
+                                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Text" Click="RemoveDocument" title="Открепить файл" />
+                                </RadzenStack>
+                            </div>
+                        }
+                    </RadzenStack>
+                </div>
             </RadzenCard>
 
-            @* --- 3. ИНТЕРАКТИВЫ (ТЕСТЫ И КАРТОЧКИ) --- *@
+            @* --- 3. ИНТЕРАКТИВЫ (СВОРАЧИВАЕМЫЙ БЛОК) --- *@
             <RadzenCard class="rz-p-4" style="border-radius: 12px; border-left: 5px solid var(--rz-warning);">
-                <RadzenText TextStyle="TextStyle.H6" class="rz-mb-3"><i class="fa-solid fa-gamepad rz-mr-2"></i> Интерактивы</RadzenText>
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween"
+                             class="section-header-toggle" @onclick="() => isInteractivesExpanded = !isInteractivesExpanded">
+                    <RadzenText TextStyle="TextStyle.H6" class="rz-m-0"><i class="fa-solid fa-gamepad rz-mr-2"></i> Интерактивы</RadzenText>
+                    <i class="fa-solid fa-chevron-down chevron-icon @(isInteractivesExpanded ? "rotated" : "")"></i>
+                </RadzenStack>
                 
-                <div class="row">
-                    <div class="col-12 col-md-6 rz-mb-3 rz-mb-md-0">
-                        <RadzenText TextStyle="TextStyle.Subtitle2">Прикрепить тест</RadzenText>
-                        <RadzenDropDown TValue="int?" @bind-Value="editPost.QuizId"
-                                        Data="@availableQuizzes" TextProperty="Title" ValueProperty="Id"
-                                        Placeholder="Выберите тест из списка..." AllowClear="true" style="width: 100%;" />
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <RadzenText TextStyle="TextStyle.Subtitle2">Прикрепить карточки</RadzenText>
-                        <RadzenDropDown TValue="int?" @bind-Value="editPost.FlashcardSetId"
-                                        Data="@availableFlashcardSets" TextProperty="Name" ValueProperty="Id"
-                                        Placeholder="Выберите набор карточек..." AllowClear="true" style="width: 100%;" />
+                <div class="expandable-section @(isInteractivesExpanded ? "expanded" : "")">
+                    <div class="row rz-pt-3">
+                        <div class="col-12 col-md-6 rz-mb-3 rz-mb-md-0">
+                            <RadzenText TextStyle="TextStyle.Subtitle2">Прикрепить тест</RadzenText>
+                            <RadzenDropDown TValue="int?" @bind-Value="editPost.QuizId"
+                                            Data="@availableQuizzes" TextProperty="Title" ValueProperty="Id"
+                                            Placeholder="Выберите тест из списка..." AllowClear="true" style="width: 100%;" />
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <RadzenText TextStyle="TextStyle.Subtitle2">Прикрепить карточки</RadzenText>
+                            <RadzenDropDown TValue="int?" @bind-Value="editPost.FlashcardSetId"
+                                            Data="@availableFlashcardSets" TextProperty="Name" ValueProperty="Id"
+                                            Placeholder="Выберите набор карточек..." AllowClear="true" style="width: 100%;" />
+                        </div>
                     </div>
                 </div>
             </RadzenCard>
@@ -165,7 +181,7 @@ else
             </RadzenCard>
 
             @* --- 5. ОБНОВЛЕНИЕ --- *@
-            <div class="rz-p-4 rz-mt-2" style="background: var(--rz-secondary-lighter); border-radius: 12px; border: 1px solid var(--rz-secondary-light); box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+            <div class="rz-p-4 rz-mt-2">
                 <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" Wrap="FlexWrap.Wrap" Gap="1rem">
                     
                     <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem" Wrap="FlexWrap.Wrap" style="max-width: 100%;">
@@ -190,10 +206,50 @@ else
     </RadzenTemplateForm>
 }
 
+<style>
+    /* Стили для плавного раскрытия */
+    .section-header-toggle {
+        cursor: pointer;
+        user-select: none;
+        transition: opacity 0.2s;
+    }
+
+        .section-header-toggle:hover {
+            opacity: 0.8;
+        }
+
+    .chevron-icon {
+        font-size: 1.2rem;
+        color: var(--rz-text-disabled-color);
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+        .chevron-icon.rotated {
+            transform: rotate(180deg);
+            color: var(--rz-primary);
+        }
+
+    .expandable-section {
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease-in-out;
+    }
+
+        .expandable-section.expanded {
+            max-height: 1500px; /* Достаточно большое значение для контента */
+            opacity: 1;
+            overflow: visible; /* Чтобы выпадающие списки (dropdown) не обрезались */
+        }
+</style>
+
 @code {
     [Parameter]
     public int Id { get; set; }
     
+    private bool isMediaExpanded = false;
+    private bool isInteractivesExpanded = false;
+
     private List<string> availableTags = new();
     private BlogPost? editPost;
     List<Quiz> availableQuizzes = new();
@@ -210,7 +266,25 @@ else
         availableQuizzes = await DbContext.Quizzes.ToListAsync();
         availableFlashcardSets = await DbContext.FlashcardSets.ToListAsync();
         
-        if (editPost == null) NavManager.NavigateTo("/admin/articles");
+        if (editPost == null)
+        {
+            NavManager.NavigateTo("/admin/articles");
+            return;
+        }
+
+        // АВТО-РАСКРЫТИЕ ВКЛАДОК ПРИ НАЛИЧИИ ДАННЫХ
+        if (!string.IsNullOrEmpty(editPost.CoverImageUrl) ||
+            !string.IsNullOrEmpty(editPost.MainAudioUrl) ||
+            !string.IsNullOrEmpty(editPost.MainVideoUrl) ||
+            !string.IsNullOrEmpty(editPost.FileAttachmentUrl))
+        {
+            isMediaExpanded = true;
+        }
+
+        if (editPost.QuizId.HasValue || editPost.FlashcardSetId.HasValue)
+        {
+            isInteractivesExpanded = true;
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -296,7 +370,7 @@ else
 
                 if (!string.IsNullOrEmpty(newUrl))
                 {
-                    FileService.DeleteFile(editPost.CoverImageUrl); // ОЧИСТКА МУСОРА
+                    FileService.DeleteFile(editPost.CoverImageUrl);
                     editPost.CoverImageUrl = newUrl;
                 }
             }
@@ -314,7 +388,7 @@ else
             
             if (!string.IsNullOrEmpty(newUrl))
             {
-                FileService.DeleteFile(editPost!.MainAudioUrl); // ОЧИСТКА МУСОРА
+                FileService.DeleteFile(editPost!.MainAudioUrl);
                 editPost.MainAudioUrl = newUrl;
                 Notification.Notify(NotificationSeverity.Success, "Аудио загружено");
             }
@@ -332,7 +406,7 @@ else
             
             if (!string.IsNullOrEmpty(newUrl))
             {
-                FileService.DeleteFile(editPost!.MainVideoUrl); // ОЧИСТКА МУСОРА
+                FileService.DeleteFile(editPost!.MainVideoUrl);
                 editPost.MainVideoUrl = newUrl;
                 Notification.Notify(NotificationSeverity.Success, "Видео загружено");
             }
@@ -350,7 +424,7 @@ else
             
             if (!string.IsNullOrEmpty(newUrl))
             {
-                FileService.DeleteFile(editPost!.FileAttachmentUrl); 
+                FileService.DeleteFile(editPost!.FileAttachmentUrl);
                 editPost.FileAttachmentUrl = newUrl;
                 Notification.Notify(NotificationSeverity.Success, "Успех", "Файл прикреплен!");
             }

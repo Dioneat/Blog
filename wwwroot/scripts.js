@@ -1,5 +1,5 @@
 ﻿/* ==========================================
-   1. СИСТЕМА ТЕМ (АБСОЛЮТНАЯ ЗАЩИТА ОТ BLAZOR)
+   1. СИСТЕМА ТЕМ
    ========================================== */
 window.applyTheme = function (theme) {
     if (theme === 'dark') {
@@ -37,7 +37,6 @@ window.addEventListener('storage', (event) => { if (event.key === 'theme') windo
 // 2. Официальная поддержка .NET 8 (Enhanced Navigation)
 document.addEventListener('blazor:enhancedload', window.restoreTheme);
 
-// 3. "ЦЕРБЕР" - Бронебойная защита от перерисовок Blazor
 const themeGuard = new MutationObserver(() => {
     const theme = localStorage.getItem('theme');
 

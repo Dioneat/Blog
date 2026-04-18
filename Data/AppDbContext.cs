@@ -1,5 +1,6 @@
 ﻿using Blog10.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Blog10.Data
 {
@@ -21,15 +22,24 @@ namespace Blog10.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder); 
+            base.OnModelCreating(modelBuilder);
+
+            var tagsComparer = new ValueComparer<List<string>>(
+                (c1, c2) => (c1 ?? new List<string>()).SequenceEqual(c2 ?? new List<string>()),
+                c => c == null
+                    ? 0
+                    : c.Aggregate(0, (a, v) => HashCode.Combine(a, v == null ? 0 : v.GetHashCode())),
+                c => c == null ? new List<string>() : c.ToList());
 
             modelBuilder.Entity<BlogPost>()
                 .Property(e => e.Tags)
                 .HasConversion(
                     v => string.Join(',', v),
-                    v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()
+                    v => string.IsNullOrWhiteSpace(v)
+                        ? new List<string>()
+                        : v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList(),
+                    tagsComparer
                 );
-
 
             modelBuilder.Entity<BlogPost>()
                 .HasIndex(a => a.Slug)
@@ -42,13 +52,12 @@ namespace Blog10.Data
                 .HasIndex(s => s.Key)
                 .IsUnique();
 
-
             modelBuilder.Entity<AdminAccount>().HasData(
                 new AdminAccount
                 {
                     Id = 1,
                     Username = "admin",
-                    Password = "password1256"
+                    Password = "password1234"
                 }
             );
         }

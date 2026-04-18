@@ -122,7 +122,7 @@ namespace Blog10.Migrations
                         new
                         {
                             Id = 1,
-                            Password = "password123",
+                            Password = "password1234",
                             Username = "admin"
                         });
                 });

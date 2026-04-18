@@ -40,7 +40,7 @@ namespace Blog10.Models
 
         [MaxLength(50)]
         public string? StatsCertificates { get; set; } = "30+";
-        public string? AboutPageTitle { get; set; } = "Елена Тимофеева"; 
+        public string? AboutPageTitle { get; set; } = "Логопед-педагог"; 
 
         [MaxLength(1000)]
         public string? QuoteText { get; set; } = "Речь — это инструмент, с помощью которого мы открываем мир.";

@@ -2,6 +2,7 @@ using Blog10.Components;
 using Blog10.Data;
 using Blog10.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Radzen;
 
@@ -44,11 +45,10 @@ builder.Services.AddAntiforgery();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    dbContext.Database.Migrate();
-}
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
 
 if (!app.Environment.IsDevelopment())
 {
@@ -56,7 +56,15 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
 }
+app.Use(async (context, next) =>
+{
+    context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+    context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+    context.Response.Headers["Permissions-Policy"] =
+        "geolocation=(), microphone=(), camera=(), payment=(), usb=(), browsing-topics=()";
 
+    await next();
+});
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();

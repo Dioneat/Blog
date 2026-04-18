@@ -3,6 +3,11 @@
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 
 @using System.Text.RegularExpressions
+@using Microsoft.EntityFrameworkCore
+@using Blog10.Data
+@using Blog10.Models
+@using Radzen
+@using Radzen.Blazor
 
 @inject AppDbContext DbContext
 @inject NavigationManager NavManager
@@ -11,11 +16,19 @@
 
 <PageTitle>Управление статьями</PageTitle>
 
-<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-4">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center rz-mb-4" style="gap: 15px;">
     <RadzenText TextStyle="TextStyle.H3" TagName="TagName.H1" class="rz-m-0">Статьи блога</RadzenText>
-    <RadzenButton Text="Загрузить из ВК" Icon="cloud_download" ButtonStyle="ButtonStyle.Secondary" Click="@(() => NavManager.NavigateTo("/admin/articles/vk-sync"))" class="rz-ml-2" />
-    <RadzenButton Text="Написать статью" Icon="add_circle" ButtonStyle="ButtonStyle.Primary" Click="@GoToCreate" />
-</RadzenStack>
+    
+    <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Wrap="FlexWrap.Wrap">
+        <RadzenButton Text="Импорт из ВК" Icon="cloud_download" ButtonStyle="ButtonStyle.Secondary"
+                      Click="@(() => NavManager.NavigateTo("/admin/articles/vk-sync"))"
+                      class="rz-flex-1 rz-flex-md-0" />
+                      
+        <RadzenButton Text="Написать статью" Icon="add_circle" ButtonStyle="ButtonStyle.Primary"
+                      Click="@GoToCreate"
+                      class="rz-flex-1 rz-flex-md-0" />
+    </RadzenStack>
+</div>
 
 <RadzenDataGrid @ref="articlesGrid" Data="@articles" TItem="BlogPost" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true">
     <Columns>
@@ -33,7 +46,7 @@
             </Template>
         </RadzenDataGridColumn>
         
-        <RadzenDataGridColumn TItem="BlogPost" Property="IsDraft" Title="Статус" Width="120px">
+        <RadzenDataGridColumn TItem="BlogPost" Property="IsDraft" Title="Статус" Width="120px" TextAlign="TextAlign.Center">
             <Template Context="post">
                 @if (post.IsDraft)
                 {
@@ -48,10 +61,12 @@
 
         <RadzenDataGridColumn TItem="BlogPost" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Width="120px">
             <Template Context="post">
-                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium"
-                              Click="@(() => EditPost(post.Id))" class="rz-mr-1" />
-                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium"
-                              Click="@(() => DeletePost(post))" />
+                <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" JustifyContent="JustifyContent.End" Wrap="FlexWrap.NoWrap">
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium"
+                                  Click="@(() => EditPost(post.Id))" />
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium"
+                                  Click="@(() => DeletePost(post))" />
+                </RadzenStack>
             </Template>
         </RadzenDataGridColumn>
     </Columns>
@@ -59,11 +74,11 @@
 
 @code {
     private List<BlogPost> articles = new List<BlogPost>();
-    private RadzenDataGrid<BlogPost> articlesGrid;
+    private RadzenDataGrid<BlogPost>? articlesGrid;
 
     protected override async Task OnInitializedAsync()
     {
-        articles = await DbContext.Articles.OrderByDescending(a => a.CreatedAt).ToListAsync();
+        articles = await DbContext.Articles.AsNoTracking().OrderByDescending(a => a.CreatedAt).ToListAsync();
     }
 
     private void GoToCreate() => NavManager.NavigateTo("/admin/articles/create");
@@ -76,13 +91,15 @@
             "Подтверждение удаления",
             new ConfirmOptions() { OkButtonText = "Да, удалить", CancelButtonText = "Отмена" });
 
-        if (result.HasValue && result.Value == true)
+        if (result == true)
         {
+            // Очистка физических файлов
             FileService.DeleteFile(post.CoverImageUrl);
             FileService.DeleteFile(post.MainAudioUrl);
             FileService.DeleteFile(post.MainVideoUrl);
             FileService.DeleteFile(post.FileAttachmentUrl);
 
+            // Очистка картинок внутри текста статьи
             if (!string.IsNullOrEmpty(post.Content))
             {
                 var matches = Regex.Matches(post.Content, @"src=""(/uploads/images/[^""]+)""");
@@ -94,11 +111,13 @@
                     }
                 }
             }
-            DbContext.Articles.Remove(post);
-            await DbContext.SaveChangesAsync();
+
+            // ОПТИМИЗАЦИЯ: Прямое удаление из БД без загрузки в память
+            await DbContext.Articles.Where(a => a.Id == post.Id).ExecuteDeleteAsync();
             
-            articles.Remove(post);
-            await articlesGrid.Reload();
+            articles.RemoveAll(a => a.Id == post.Id);
+            if (articlesGrid != null) await articlesGrid.Reload();
+            
             FileService.RunGarbageCollectorInBackground();
         }
     }

@@ -24,7 +24,8 @@
 
 <RadzenSidebar @bind-Expanded="@sidebarExpanded" class="admin-sidebar" style="padding-top: 60px; z-index: 1040;">
     <RadzenPanelMenu>
-        <RadzenPanelMenuItem Text="Дашборд" Icon="dashboard" Path="/admin" />
+        <RadzenPanelMenuItem Text="Дашборд" Icon="dashboard" Path="/admin" Match="NavLinkMatch.All" />
+        
         <RadzenPanelMenuItem Text="Статьи блога" Icon="article" Path="/admin/articles" />
         <RadzenPanelMenuItem Text="Отзывы" Icon="reviews" Path="/admin/reviews" />
         <RadzenPanelMenuItem Text="Контакты на сайте" Icon="contact_phone" Path="/admin/settings/contacts" />
@@ -32,9 +33,12 @@
         <RadzenPanelMenuItem Text="Обо мне" Icon="person" Path="/admin/about" />
         <RadzenPanelMenuItem Text="Тесты" Path="/admin/quizzes" Icon="quiz" />
         <RadzenPanelMenuItem Text="Карточки" Path="/admin/flashcards" Icon="style" />
-        <RadzenPanelMenuItem Text="Настройки" Icon="settings" Path="/admin/settings" />
+        
+        <RadzenPanelMenuItem Text="Настройки" Icon="settings" Path="/admin/settings" Match="NavLinkMatch.All" />
+        
         <RadzenPanelMenuItem Text="Логи и Состояние" Icon="monitor_heart" Path="/admin/system" />
-        <RadzenPanelMenuItem Text="Вернуться на сайт" Icon="home" Path="/" style="margin-top: 50px; border-top: 1px solid var(--rz-secondary-light);" />
+        
+        <RadzenPanelMenuItem Text="Вернуться на сайт" Icon="home" Path="/" Match="NavLinkMatch.All" style="margin-top: 50px; border-top: 1px solid var(--rz-secondary-light);" />
     </RadzenPanelMenu>
 </RadzenSidebar>
 

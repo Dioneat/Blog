@@ -4,7 +4,13 @@
 
 @using System.Diagnostics
 @using System.Text.Json
-
+@using System.IO
+@using System.Runtime.InteropServices
+@using Microsoft.EntityFrameworkCore
+@using Blog10.Data
+@using Blog10.Models
+@using Radzen
+@using Radzen.Blazor
 
 @inject AppDbContext DbContext
 @inject NavigationManager NavManager
@@ -16,91 +22,160 @@
 
 <RadzenText TextStyle="TextStyle.H3" TagName="TagName.H1" class="rz-mb-4">Состояние системы</RadzenText>
 
+@* --- 1. АППАРАТНЫЕ И СИСТЕМНЫЕ МЕТРИКИ --- *@
 <div class="row rz-mb-4">
     <div class="col-md-3 rz-mb-3 rz-mb-md-0">
-        <RadzenCard class="rz-p-4 rz-text-align-center" style="border-bottom: 4px solid var(--rz-primary);">
+        <RadzenCard class="rz-p-4 rz-text-align-center" style="border-bottom: 4px solid var(--rz-primary); height: 100%;">
             <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-color-secondary">Использование ОЗУ</RadzenText>
             <RadzenText TextStyle="TextStyle.H4" class="rz-m-0">
                 <i class="fa-solid fa-memory rz-mr-2" style="color: var(--rz-primary);"></i> @memoryUsage MB
             </RadzenText>
+            <RadzenText TextStyle="TextStyle.Caption" class="rz-color-secondary">Потоков (Threads): @threadCount</RadzenText>
         </RadzenCard>
     </div>
     <div class="col-md-3 rz-mb-3 rz-mb-md-0">
-        <RadzenCard class="rz-p-4 rz-text-align-center" style="border-bottom: 4px solid var(--rz-info);">
-            <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-color-secondary">Аптайм (Без перезагрузок)</RadzenText>
+        <RadzenCard class="rz-p-4 rz-text-align-center" style="border-bottom: 4px solid var(--rz-info); height: 100%;">
+            <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-color-secondary">Аптайм (С момента запуска)</RadzenText>
             <RadzenText TextStyle="TextStyle.H4" class="rz-m-0">
                 <i class="fa-solid fa-server rz-mr-2" style="color: var(--rz-info);"></i> @uptime
             </RadzenText>
+            <RadzenText TextStyle="TextStyle.Caption" class="rz-color-secondary">@osArchitecture</RadzenText>
         </RadzenCard>
     </div>
     <div class="col-md-3 rz-mb-3 rz-mb-md-0">
-        <RadzenCard class="rz-p-4 rz-text-align-center" style="border-bottom: 4px solid var(--rz-success);">
-            <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-color-secondary">Всего логов</RadzenText>
+        <RadzenCard class="rz-p-4 rz-text-align-center" style="border-bottom: 4px solid var(--rz-success); height: 100%;">
+            <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-color-secondary">Размер Базы Данных</RadzenText>
             <RadzenText TextStyle="TextStyle.H4" class="rz-m-0">
-                <i class="fa-solid fa-list rz-mr-2" style="color: var(--rz-success);"></i> @totalLogs
+                <i class="fa-solid fa-database rz-mr-2" style="color: var(--rz-success);"></i> @dbSize
             </RadzenText>
+            <RadzenText TextStyle="TextStyle.Caption" class="rz-color-secondary">SQLite / Файл .db</RadzenText>
         </RadzenCard>
     </div>
     <div class="col-md-3">
-        <RadzenCard class="rz-p-4 rz-text-align-center" style="border-bottom: 4px solid var(--rz-danger);">
+        <RadzenCard class="rz-p-4 rz-text-align-center" style="border-bottom: 4px solid var(--rz-danger); height: 100%;">
             <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-color-secondary">Ошибок (Error)</RadzenText>
             <RadzenText TextStyle="TextStyle.H4" class="rz-m-0">
                 <i class="fa-solid fa-triangle-exclamation rz-mr-2" style="color: var(--rz-danger);"></i> @errorCount
             </RadzenText>
+            <RadzenText TextStyle="TextStyle.Caption" class="rz-color-secondary">Из @totalLogs логов всего</RadzenText>
         </RadzenCard>
     </div>
 </div>
-<RadzenStack Orientation="Orientation.Horizontal" class="rz-mb-4" Gap="1rem" Wrap="FlexWrap.Wrap">
-    <RadzenButton Text="Обновить данные" Icon="refresh" Click="LoadData" ButtonStyle="ButtonStyle.Primary" />
-    <RadzenButton Text="Выгрузить в JSON" Icon="file_download" Click="ExportLogsToJson" ButtonStyle="ButtonStyle.Info" Variant="Variant.Outlined" />
-    <RadzenButton Text="Очистить логи" Icon="delete_sweep" Click="ClearLogs" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" />
-</RadzenStack>
 
-@* --- ТАБЛИЦА ЛОГОВ --- *@
-<RadzenDataGrid @ref="logsGrid" Data="@logs" TItem="SystemLog" AllowPaging="true" PageSize="15" AllowSorting="true" AllowFiltering="true">
-    <Columns>
-        <RadzenDataGridColumn TItem="SystemLog" Property="CreatedAt" Title="Время" Width="160px">
-            <Template Context="log">
-                @log.CreatedAt.ToString("dd.MM.yyyy HH:mm:ss")
-            </Template>
-        </RadzenDataGridColumn>
+@* --- 2. ГРАФИКИ МОНИТОРИНГА --- *@
+<div class="row rz-mb-4">
+    <div class="col-12 col-lg-8 rz-mb-4 rz-mb-lg-0">
+        <RadzenCard style="border-radius: 12px; height: 100%;">
+            <RadzenText TextStyle="TextStyle.H6" class="rz-mb-4"><i class="fa-solid fa-chart-column rz-mr-2" style="color: var(--rz-primary);"></i> Активность системы (Последние 7 дней)</RadzenText>
+            
+            <RadzenChart>
+                <RadzenColumnSeries Data="@last7DaysStats" CategoryProperty="DateStr" Title="Ошибки" ValueProperty="ErrorCount" Fill="var(--rz-danger)" />
+                <RadzenColumnSeries Data="@last7DaysStats" CategoryProperty="DateStr" Title="Предупреждения" ValueProperty="WarningCount" Fill="var(--rz-warning)" />
+                <RadzenColumnSeries Data="@last7DaysStats" CategoryProperty="DateStr" Title="Инфо" ValueProperty="InfoCount" Fill="var(--rz-info)" />
+                
+                <RadzenColumnOptions Radius="3" />
+                <RadzenValueAxis Min="0" Step="1">
+                    <RadzenGridLines Visible="true" />
+                    <RadzenAxisTitle Text="Количество событий" />
+                </RadzenValueAxis>
+                <RadzenLegend Position="LegendPosition.Bottom" />
+            </RadzenChart>
+        </RadzenCard>
+    </div>
 
-        <RadzenDataGridColumn TItem="SystemLog" Property="Level" Title="Уровень" Width="120px" TextAlign="TextAlign.Center">
-            <Template Context="log">
-                @if (log.Level == "Error")
-                {
-                    <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Ошибка" />
-                }
-                else if (log.Level == "Warning")
-                {
-                    <RadzenBadge BadgeStyle="BadgeStyle.Warning" Text="Внимание" />
-                }
-                else
-                {
-                    <RadzenBadge BadgeStyle="BadgeStyle.Info" Text="Инфо" />
-                }
-            </Template>
-        </RadzenDataGridColumn>
+    <div class="col-12 col-lg-4">
+        <RadzenCard style="border-radius: 12px; height: 100%;">
+            <RadzenText TextStyle="TextStyle.H6" class="rz-mb-4"><i class="fa-solid fa-chart-pie rz-mr-2" style="color: var(--rz-secondary);"></i> Распределение логов</RadzenText>
+            
+            @if (levelStats.Any())
+            {
+                <RadzenChart>
+                    <RadzenDonutSeries Data="@levelStats" CategoryProperty="Category" ValueProperty="Count"
+                                       Fills="@(new[] { "var(--rz-danger)", "var(--rz-info)", "var(--rz-warning)" })">
+                        <ChildContent>
+                            <RadzenSeriesDataLabels Visible="true" />
+                        </ChildContent>
+                    </RadzenDonutSeries>
+                    <RadzenLegend Position="LegendPosition.Bottom" />
+                </RadzenChart>
+            }
+            else
+            {
+                <div style="display: flex; height: 200px; align-items: center; justify-content: center;">
+                    <RadzenText TextStyle="TextStyle.Subtitle1" class="rz-color-secondary">Логов пока нет</RadzenText>
+                </div>
+            }
+        </RadzenCard>
+    </div>
+</div>
 
-        <RadzenDataGridColumn TItem="SystemLog" Property="Source" Title="Источник" Width="150px">
-            <Template Context="log">
-                <strong>@log.Source</strong>
-            </Template>
-        </RadzenDataGridColumn>
+@* --- 3. ТАБЛИЦА ЛОГОВ И УПРАВЛЕНИЕ --- *@
+<RadzenCard style="border-radius: 12px; overflow: hidden; padding: 0;">
+    <div class="rz-p-4">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-4" Wrap="FlexWrap.Wrap" Gap="1rem">
+            <RadzenText TextStyle="TextStyle.H6" class="rz-m-0"><i class="fa-solid fa-list rz-mr-2"></i> Журнал событий</RadzenText>
+            
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" Wrap="FlexWrap.Wrap">
+                <RadzenButton Text="Обновить" Icon="refresh" Click="LoadData" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" />
+                <RadzenButton Text="JSON" Icon="file_download" Click="ExportLogsToJson" ButtonStyle="ButtonStyle.Info" Variant="Variant.Outlined" Size="ButtonSize.Small" />
+                <RadzenButton Text="Очистить" Icon="delete_sweep" Click="ClearLogs" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Small" />
+            </RadzenStack>
+        </RadzenStack>
+    </div>
 
-        <RadzenDataGridColumn TItem="SystemLog" Property="Message" Title="Сообщение" />
+    <div style="overflow-x: auto; width: 100%; border-top: 1px solid var(--rz-secondary-light);">
+        <RadzenDataGrid @ref="logsGrid" Data="@logs" TItem="SystemLog" AllowPaging="true" PageSize="15" AllowSorting="true" AllowFiltering="true" Style="min-width: 750px; border: none;">
+            <Columns>
+                <RadzenDataGridColumn TItem="SystemLog" Property="CreatedAt" Title="Время" Width="130px">
+                    <Template Context="log">
+                        @log.CreatedAt.ToString("dd.MM.yy HH:mm")
+                    </Template>
+                </RadzenDataGridColumn>
 
-        <RadzenDataGridColumn TItem="SystemLog" Title="Детали" Width="100px" TextAlign="TextAlign.Center" Filterable="false" Sortable="false">
-            <Template Context="log">
-                @if (!string.IsNullOrEmpty(log.ExceptionDetails))
-                {
-                    <RadzenButton Icon="code" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
-                                  Click="@(() => ShowDetails(log))" title="Посмотреть StackTrace" />
-                }
-            </Template>
-        </RadzenDataGridColumn>
-    </Columns>
-</RadzenDataGrid>
+                <RadzenDataGridColumn TItem="SystemLog" Property="Level" Title="Уровень" Width="100px" TextAlign="TextAlign.Center">
+                    <Template Context="log">
+                        @if (log.Level == "Error")
+                        {
+                            <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Ошибка" />
+                        }
+                        else if (log.Level == "Warning")
+                        {
+                            <RadzenBadge BadgeStyle="BadgeStyle.Warning" Text="Внимание" />
+                        }
+                        else
+                        {
+                            <RadzenBadge BadgeStyle="BadgeStyle.Info" Text="Инфо" />
+                        }
+                    </Template>
+                </RadzenDataGridColumn>
+
+                <RadzenDataGridColumn TItem="SystemLog" Property="Source" Title="Источник" Width="120px">
+                    <Template Context="log">
+                        <strong>@log.Source</strong>
+                    </Template>
+                </RadzenDataGridColumn>
+
+                <RadzenDataGridColumn TItem="SystemLog" Property="Message" Title="Сообщение">
+                    <Template Context="log">
+                        <div style="white-space: normal; word-break: break-word; line-height: 1.4;">
+                            @log.Message
+                        </div>
+                    </Template>
+                </RadzenDataGridColumn>
+
+                <RadzenDataGridColumn TItem="SystemLog" Title="Детали" Width="80px" TextAlign="TextAlign.Center" Filterable="false" Sortable="false">
+                    <Template Context="log">
+                        @if (!string.IsNullOrEmpty(log.ExceptionDetails))
+                        {
+                            <RadzenButton Icon="code" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                                          Click="@(() => ShowDetails(log))" title="Посмотреть StackTrace" />
+                        }
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </div>
+</RadzenCard>
 
 @if (selectedLog != null)
 {
@@ -138,10 +213,20 @@
     private RadzenDataGrid<SystemLog>? logsGrid;
     private SystemLog? selectedLog;
 
+    // Метрики
     private string memoryUsage = "0";
     private string uptime = "0ч 0м";
+    private string threadCount = "0";
+    private string osArchitecture = "";
+    private string dbSize = "0 MB";
     private int totalLogs = 0;
     private int errorCount = 0;
+
+    class DataItem { public string Category { get; set; } = ""; public int Count { get; set; } }
+    class DateStat { public string DateStr { get; set; } = ""; public int ErrorCount { get; set; } public int WarningCount { get; set; } public int InfoCount { get; set; } }
+    
+    private List<DataItem> levelStats = new();
+    private List<DateStat> last7DaysStats = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -156,21 +241,42 @@
         logs = await DbContext.SystemLogs
             .AsNoTracking()
             .OrderByDescending(l => l.CreatedAt)
+            .Take(1000)
             .ToListAsync();
 
         try
         {
             var process = Process.GetCurrentProcess();
             memoryUsage = (process.WorkingSet64 / (1024 * 1024)).ToString();
+            threadCount = process.Threads.Count.ToString();
+            osArchitecture = RuntimeInformation.OSDescription;
             
             var timeSpan = DateTime.Now - process.StartTime;
-            uptime = $"{(int)timeSpan.TotalHours}ч {timeSpan.Minutes}м";
+            uptime = $"{(int)timeSpan.TotalDays}д {(int)timeSpan.Hours}ч {timeSpan.Minutes}м";
+
+            var dbConnectionInfo = DbContext.Database.GetDbConnection().DataSource;
+            if (!string.IsNullOrEmpty(dbConnectionInfo) && File.Exists(dbConnectionInfo))
+            {
+                double bytes = new System.IO.FileInfo(dbConnectionInfo).Length;
+                dbSize = $"{(bytes / (1024 * 1024)):F2} MB";
+            }
         }
-        catch
+        catch { }
+
+        levelStats = logs.GroupBy(l => l.Level)
+                         .Select(g => new DataItem { Category = g.Key, Count = g.Count() })
+                         .OrderBy(d => d.Category)
+                         .ToList();
+
+        var last7Days = Enumerable.Range(0, 7).Select(i => DateTime.Today.AddDays(-i)).Reverse().ToList();
+        
+        last7DaysStats = last7Days.Select(date => new DateStat
         {
-            memoryUsage = "N/A";
-            uptime = "N/A";
-        }
+            DateStr = date.ToString("dd.MM"),
+            ErrorCount = logs.Count(l => l.CreatedAt.Date == date && l.Level == "Error"),
+            WarningCount = logs.Count(l => l.CreatedAt.Date == date && l.Level == "Warning"),
+            InfoCount = logs.Count(l => l.CreatedAt.Date == date && l.Level == "Info")
+        }).ToList();
 
         if (logsGrid != null) await logsGrid.Reload();
     }
@@ -190,7 +296,6 @@
         if (result == true)
         {
             await DbContext.Database.ExecuteSqlRawAsync("DELETE FROM SystemLogs");
-            
             Notification.Notify(NotificationSeverity.Success, "Успех", "Логи очищены.");
             await LoadData();
         }
@@ -219,7 +324,6 @@
             var fileName = $"SystemLogs_{DateTime.Now:yyyy_MM_dd_HH_mm}.json";
 
             await JSRuntime.InvokeVoidAsync("downloadJsonFile", fileName, base64);
-            
             Notification.Notify(NotificationSeverity.Success, "Скачивание началось", "Логи успешно экспортированы.");
         }
         catch (Exception ex)

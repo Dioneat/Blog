@@ -2,6 +2,12 @@
 @layout AdminLayout
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 
+@using Microsoft.EntityFrameworkCore
+@using Blog10.Data
+@using Blog10.Models
+@using Radzen
+@using Radzen.Blazor
+
 @inject AppDbContext DbContext
 @inject NavigationManager NavManager
 
@@ -12,7 +18,6 @@
     <RadzenText TextStyle="TextStyle.H3" TagName="TagName.H1" class="rz-m-0 rz-ml-2">Обзор проекта</RadzenText>
 </RadzenStack>
 
-@* --- ГЛАВНАЯ СТАТИСТИКА --- *@
 <div class="row rz-mb-4">
     <div class="col-12 col-md-6 col-lg-3 rz-mb-3 rz-mb-lg-0">
         <RadzenCard style="border-radius: 12px; border-bottom: 4px solid var(--rz-primary); height: 100%;">
@@ -76,6 +81,45 @@
     </div>
 </div>
 
+<div class="row rz-mb-4">
+    <div class="col-12 col-xl-8 rz-mb-4 rz-mb-xl-0">
+        <RadzenCard style="border-radius: 12px; height: 100%;">
+            <RadzenText TextStyle="TextStyle.H6" class="rz-mb-4"><i class="fa-solid fa-chart-line rz-mr-2" style="color: var(--rz-primary);"></i> Динамика публикаций (6 мес)</RadzenText>
+            
+            <RadzenChart>
+                <RadzenColumnSeries Data="@monthlyStats" CategoryProperty="MonthName" Title="Статьи" LineType="LineType.Dashed" ValueProperty="Count" Fill="var(--rz-primary-lighter)" Stroke="var(--rz-primary)" StrokeWidth="2" />
+                <RadzenColumnOptions Radius="5" />
+                <RadzenValueAxis Min="0" Step="1">
+                    <RadzenGridLines Visible="true" />
+                    <RadzenAxisTitle Text="Количество статей" />
+                </RadzenValueAxis>
+                <RadzenLegend Visible="false" />
+            </RadzenChart>
+        </RadzenCard>
+    </div>
+
+    <div class="col-12 col-xl-4">
+        <RadzenCard style="border-radius: 12px; height: 100%;">
+            <RadzenText TextStyle="TextStyle.H6" class="rz-mb-4"><i class="fa-solid fa-chart-pie rz-mr-2" style="color: var(--rz-secondary);"></i> Структура контента</RadzenText>
+            
+            <RadzenChart>
+                <RadzenDonutSeries Data="@contentDistribution" CategoryProperty="Category" ValueProperty="Count">
+                    <ChildContent>
+                        <RadzenSeriesDataLabels Visible="true" />
+                    </ChildContent>
+                    <TitleTemplate>
+                        <div class="rz-donut-content">
+                            <RadzenText TextStyle="TextStyle.H6" class="rz-color-secondary">Всего</RadzenText>
+                            <RadzenText TextStyle="TextStyle.H4">@(publishedArticlesCount + draftArticlesCount + quizzesCount + flashcardsCount)</RadzenText>
+                        </div>
+                    </TitleTemplate>
+                </RadzenDonutSeries>
+                <RadzenLegend Position="LegendPosition.Bottom" />
+            </RadzenChart>
+        </RadzenCard>
+    </div>
+</div>
+
 <div class="row">
     <div class="col-12 col-xl-8 rz-mb-4">
         <RadzenCard style="border-radius: 12px; height: 100%;">
@@ -113,7 +157,6 @@
                                 }
                                 else
                                 {
-
                                     <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="Опубликована" />
                                 }
                             </Template>
@@ -166,11 +209,16 @@
 
     private List<BlogPost>? recentArticles;
 
+    class DataItem { public string Category { get; set; } = ""; public int Count { get; set; } }
+    class MonthStat { public string MonthName { get; set; } = ""; public int Count { get; set; } }
+    
+    private List<DataItem> contentDistribution = new();
+    private List<MonthStat> monthlyStats = new();
+
     protected override async Task OnInitializedAsync()
     {
         publishedArticlesCount = await DbContext.Articles.CountAsync(a => !a.IsDraft);
         draftArticlesCount = await DbContext.Articles.CountAsync(a => a.IsDraft);
-        
         reviewsCount = await DbContext.Reviews.CountAsync();
         categoriesCount = await DbContext.Categories.CountAsync();
         quizzesCount = await DbContext.Quizzes.CountAsync();
@@ -188,5 +236,29 @@
                 IsDraft = a.IsDraft
             })
             .ToListAsync();
+
+        contentDistribution = new List<DataItem>
+        {
+            new DataItem { Category = "Статьи", Count = publishedArticlesCount + draftArticlesCount },
+            new DataItem { Category = "Тесты", Count = quizzesCount },
+            new DataItem { Category = "Карточки", Count = flashcardsCount }
+        }.Where(d => d.Count > 0).ToList(); 
+
+        var sixMonthsAgo = DateTime.Now.AddMonths(-5);
+        var recentDates = await DbContext.Articles
+            .AsNoTracking()
+            .Where(a => a.CreatedAt >= new DateTime(sixMonthsAgo.Year, sixMonthsAgo.Month, 1))
+            .Select(a => a.CreatedAt)
+            .ToListAsync();
+
+        monthlyStats = Enumerable.Range(0, 6)
+            .Select(i => DateTime.Now.AddMonths(-i))
+            .Select(d => new MonthStat
+            {
+                MonthName = d.ToString("MMM yy"), 
+                Count = recentDates.Count(a => a.Year == d.Year && a.Month == d.Month)
+            })
+            .Reverse()
+            .ToList();
     }
 }

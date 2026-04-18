@@ -45,14 +45,24 @@
     {
         if (!string.IsNullOrWhiteSpace(newCategoryName))
         {
+            var cleanName = newCategoryName.Trim();
             
-            if (!DbContext.Categories.Any(c => c.Name.ToLower() == newCategoryName.ToLower()))
+            var exists = await DbContext.Categories.AnyAsync(c => EF.Functions.Like(c.Name, cleanName));
+            
+            if (!exists)
             {
-                DbContext.Categories.Add(new Category { Name = newCategoryName.Trim() });
+                var newCat = new Category { Name = cleanName };
+                DbContext.Categories.Add(newCat);
                 await DbContext.SaveChangesAsync();
                 
-                newCategoryName = ""; 
-                await LoadCategories(); 
+                
+                DbContext.Entry(newCat).State = EntityState.Detached;
+
+                newCategoryName = "";
+                await LoadCategories();
+            }
+            else
+            {
             }
         }
     }
@@ -60,10 +70,13 @@
     private async Task DeleteCategory(Category cat)
     {
         var result = await DialogService.Confirm($"Удалить категорию \"{cat.Name}\"?", "Подтверждение");
+        
         if (result == true)
         {
-            DbContext.Categories.Remove(cat);
-            await DbContext.SaveChangesAsync();
+            await DbContext.Categories
+                .Where(c => c.Id == cat.Id)
+                .ExecuteDeleteAsync();
+
             await LoadCategories();
         }
     }

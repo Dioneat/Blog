@@ -7,7 +7,7 @@
 @inject NavigationManager NavManager
 @inject IJSRuntime JSRuntime
 
-<PageTitle>@(post != null ? $"{post.Title} | Елена Тимофеева" : "Загрузка...")</PageTitle>
+<PageTitle>@(post != null ? $"{post.Title} | Логопед-педагог" : "Загрузка...")</PageTitle>
 
 @if (post == null)
 {
@@ -187,7 +187,7 @@ else
   "description": "@post.ShortDescription",
   "author": {
     "@@type": "Person",
-    "name": "Елена Тимофеева"
+    "name": "Логопед-педагог"
   },
   "datePublished": "@post.CreatedAt.ToString("yyyy-MM-dd")",
   "image": "@GetAbsoluteImageUrl(post.CoverImageUrl)"
