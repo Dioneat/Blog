@@ -1,0 +1,157 @@
+﻿@page "/admin/flashcards/edit/{Id:int}"
+@layout AdminLayout
+@rendermode InteractiveServer
+@using System.Text.Json
+@using Blog10.Models
+@using Blog10.Data
+@using Microsoft.EntityFrameworkCore
+@using Radzen
+@using Radzen.Blazor
+
+@inject AppDbContext DbContext
+@inject NavigationManager NavManager
+@inject NotificationService Notification
+
+<PageTitle>Редактировать набор карточек</PageTitle>
+
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" class="rz-mb-4">
+    <RadzenButton Icon="arrow_back" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Click="@(() => NavManager.NavigateTo("/admin/flashcards"))" />
+    <RadzenText TextStyle="TextStyle.H3" TagName="TagName.H1" class="rz-m-0">Редактирование набора</RadzenText>
+</RadzenStack>
+
+@if (editSet == null)
+{
+    <RadzenProgressBar Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+}
+else
+{
+    <RadzenTemplateForm TItem="FlashcardSet" Data="@editSet" Submit="OnSubmit">
+        <RadzenStack Gap="2rem">
+            
+            <RadzenStack Gap="1rem" class="rz-p-4 rz-border-radius-2" style="border: 1px solid var(--rz-secondary-light); background: var(--rz-base-background-color);">
+                <RadzenFormField Text="Название набора (например: Автоматизация звука Р)">
+                    <RadzenTextBox @bind-Value="editSet.Name" Name="Name" style="width: 100%;" />
+                    <RadzenRequiredValidator Component="Name" Text="Название обязательно" />
+                </RadzenFormField>
+            </RadzenStack>
+            <RadzenStack Gap="1rem">
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+                    <RadzenText TextStyle="TextStyle.H5" class="rz-m-0">Карточки</RadzenText>
+                    <RadzenButton Text="Добавить карточку" Icon="add_circle_outline" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Click="AddCard" />
+                </RadzenStack>
+
+                <div style="display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));">
+                    @foreach (var card in editorCards)
+                    {
+                        <div @key="card">
+                            <RadzenCard style="position: relative; border-top: 4px solid var(--rz-primary);">
+                                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Text" Size="ButtonSize.ExtraSmall"
+                                              style="position: absolute; top: 5px; right: 5px;" Click="@(() => editorCards.Remove(card))" />
+                                
+                                <RadzenStack Gap="1rem">
+                                    <RadzenFormField Text="Лицевая сторона (Заголовок)">
+                                        <RadzenTextBox @bind-Value="card.FrontTitle" Placeholder="Напр: Упражнение 'Маляр'" style="width: 100%; font-weight: bold;" />
+                                    </RadzenFormField>
+
+                                    <RadzenFormField Text="Выберите иконку">
+                                        <RadzenDropDown @bind-Value="card.IconClass" Data="@availableIcons" ValueProperty="Class" TextProperty="Name" style="width: 100%;">
+                                            <Template Context="icon">
+                                                <i class="@(((IconOption)icon).Class)" style="margin-right: 10px; width: 25px; text-align: center; color: var(--rz-primary);"></i>
+                                                @(((IconOption)icon).Name)
+                                            </Template>
+                                            <ValueTemplate Context="icon">
+                                                <i class="@(((IconOption)icon).Class)" style="margin-right: 10px; color: var(--rz-primary);"></i>
+                                                @(((IconOption)icon).Name)
+                                            </ValueTemplate>
+                                        </RadzenDropDown>
+                                    </RadzenFormField>
+
+                                    <RadzenFormField Text="Обратная сторона (Описание)">
+                                        <RadzenTextArea @bind-Value="card.BackDescription" Placeholder="Как выполнять упражнение..." style="width: 100%;" Rows="3" />
+                                    </RadzenFormField>
+                                </RadzenStack>
+                            </RadzenCard>
+                        </div>
+                    }
+                </div>
+            </RadzenStack>
+
+            <RadzenButton ButtonType="ButtonType.Submit" Text="Обновить набор" Icon="save" ButtonStyle="ButtonStyle.Success" Size="ButtonSize.Large" style="width: 220px;" />
+
+        </RadzenStack>
+    </RadzenTemplateForm>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private FlashcardSet? editSet;
+    private List<FlashcardModel> editorCards = new();
+    public class IconOption
+    {
+        public string Class { get; set; } = "";
+        public string Name { get; set; } = "";
+    }
+
+    private List<IconOption> availableIcons = new()
+    {
+        new IconOption { Class = "fa-solid fa-face-smile", Name = "Улыбка (Лицо)" },
+        new IconOption { Class = "fa-solid fa-horse", Name = "Лошадка" },
+        new IconOption { Class = "fa-solid fa-frog", Name = "Лягушка" },
+        new IconOption { Class = "fa-solid fa-cat", Name = "Кошка" },
+        new IconOption { Class = "fa-solid fa-dog", Name = "Собака" },
+        new IconOption { Class = "fa-solid fa-bug", Name = "Жук" },
+        new IconOption { Class = "fa-solid fa-clock", Name = "Часики" },
+        new IconOption { Class = "fa-solid fa-music", Name = "Нота (Звук)" },
+        new IconOption { Class = "fa-solid fa-bell", Name = "Колокольчик" },
+        new IconOption { Class = "fa-solid fa-car", Name = "Машинка" },
+        new IconOption { Class = "fa-solid fa-plane", Name = "Самолетик" },
+        new IconOption { Class = "fa-solid fa-train", Name = "Поезд" },
+        new IconOption { Class = "fa-solid fa-house", Name = "Домик" },
+        new IconOption { Class = "fa-solid fa-leaf", Name = "Листик (Дыхание)" },
+        new IconOption { Class = "fa-solid fa-wind", Name = "Ветерок" },
+        new IconOption { Class = "fa-solid fa-star", Name = "Звездочка" },
+        new IconOption { Class = "fa-solid fa-heart", Name = "Сердечко" }
+    };
+    protected override async Task OnInitializedAsync()
+    {
+        editSet = await DbContext.FlashcardSets.FindAsync(Id);
+        
+        if (editSet == null)
+        {
+            NavManager.NavigateTo("/admin/flashcards");
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(editSet.CardsJson))
+        {
+            try
+            {
+                editorCards = JsonSerializer.Deserialize<List<FlashcardModel>>(editSet.CardsJson) ?? new();
+            }
+            catch
+            {
+                editorCards = new();
+            }
+        }
+    }
+
+    private void AddCard()
+    {
+        editorCards.Add(new FlashcardModel { IconClass = "fa-solid fa-star" });
+    }
+
+    private async Task OnSubmit()
+    {
+        if (editorCards.Count == 0)
+        {
+            Notification.Notify(NotificationSeverity.Error, "Ошибка", "В наборе должна быть хотя бы одна карточка!");
+            return;
+        }
+        editSet.CardsJson = JsonSerializer.Serialize(editorCards);
+        DbContext.FlashcardSets.Update(editSet);
+        await DbContext.SaveChangesAsync();
+        
+        Notification.Notify(NotificationSeverity.Success, "Успех", "Изменения сохранены");
+        NavManager.NavigateTo("/admin/flashcards");
+    }
+}

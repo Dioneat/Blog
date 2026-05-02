@@ -1,0 +1,82 @@
+﻿@page "/admin/quizzes"
+@layout AdminLayout
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+@using Blog10.Models
+@using Blog10.Data
+@using Radzen
+@using Radzen.Blazor
+
+@inject AppDbContext DbContext
+@inject NavigationManager NavManager
+@inject IJSRuntime JSRuntime
+@inject NotificationService Notification
+
+<PageTitle>Библиотека тестов</PageTitle>
+
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-4">
+    <RadzenText TextStyle="TextStyle.H3" TagName="TagName.H1" class="rz-m-0">Библиотека тестов</RadzenText>
+    <RadzenButton Text="Создать тест" Icon="add" ButtonStyle="ButtonStyle.Primary" Click="@(() => NavManager.NavigateTo("/admin/quizzes/create"))" />
+</RadzenStack>
+
+<RadzenDataGrid Data="@quizzes" TItem="Quiz" AllowPaging="true" PageSize="10" AllowSorting="true" EmptyText="Вы еще не создали ни одного теста.">
+    <Columns>
+        <RadzenDataGridColumn TItem="Quiz" Property="Id" Title="ID" Width="70px" TextAlign="TextAlign.Center" />
+        
+        <RadzenDataGridColumn TItem="Quiz" Property="Title" Title="Название теста" />
+        
+        <RadzenDataGridColumn TItem="Quiz" Property="Subtitle" Title="Подзаголовок" />
+        
+        <RadzenDataGridColumn TItem="Quiz" Property="CreatedAt" Title="Дата создания" Width="150px" TextAlign="TextAlign.Center">
+            <Template Context="quiz">
+                @quiz.CreatedAt.ToString("dd.MM.yyyy")
+            </Template>
+        </RadzenDataGridColumn>
+        
+        <RadzenDataGridColumn TItem="Quiz" Context="quiz" Title="Действия" Width="140px" TextAlign="TextAlign.Center">
+            <Template>
+                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium"
+                              Click="@(() => NavManager.NavigateTo($"/admin/quizzes/edit/{quiz.Id}"))" title="Редактировать" />
+                
+                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-ml-2"
+                              Click="@(() => DeleteQuiz(quiz))" title="Удалить" />
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    private List<Quiz> quizzes = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadQuizzes();
+    }
+
+    private async Task LoadQuizzes()
+    {
+        quizzes = await DbContext.Quizzes.AsNoTracking().OrderByDescending(q => q.CreatedAt).ToListAsync();
+    }
+
+    private async Task DeleteQuiz(Quiz quiz)
+    {
+        bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Вы уверены, что хотите удалить тест «{quiz.Title}»? Если он прикреплен к статьям, он пропадет из них.");
+        
+        if (confirm)
+        {
+            try
+            {
+                DbContext.Quizzes.Remove(quiz);
+                await DbContext.SaveChangesAsync();
+                
+                Notification.Notify(NotificationSeverity.Success, "Готово", "Тест успешно удален");
+                
+                await LoadQuizzes();
+            }
+            catch (Exception ex)
+            {
+                Notification.Notify(NotificationSeverity.Error, "Ошибка", "Не удалось удалить тест: " + ex.Message);
+            }
+        }
+    }
+}

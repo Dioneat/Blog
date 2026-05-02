@@ -1,0 +1,42 @@
+﻿@page "/admin/flashcards"
+@layout AdminLayout
+@using Microsoft.EntityFrameworkCore
+@using Blog10.Models
+@using Blog10.Data
+@using Radzen
+@using Radzen.Blazor
+@rendermode InteractiveServer
+@inject AppDbContext DbContext
+@inject NavigationManager NavManager
+<PageTitle>Библиотека карточек</PageTitle>
+
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-4">
+    <RadzenText TextStyle="TextStyle.H3" class="rz-m-0">Библиотека карточек</RadzenText>
+    <RadzenButton Text="Создать набор" Icon="add" ButtonStyle="ButtonStyle.Primary" Click="@(() => NavManager.NavigateTo("/admin/flashcards/create"))" />
+</RadzenStack>
+
+@if (flashcardSets == null)
+{
+    <RadzenProgressBar Value="100" Mode="ProgressBarMode.Indeterminate" />
+}
+else
+{
+    <RadzenDataGrid Data="@flashcardSets" TItem="FlashcardSet" EmptyText="Наборов пока нет">
+        <Columns>
+            <RadzenDataGridColumn TItem="FlashcardSet" Property="Name" Title="Название" />
+            <RadzenDataGridColumn TItem="FlashcardSet" Property="CreatedAt" Title="Создано" Width="150px">
+                <Template Context="set">@set.CreatedAt.ToString("dd.MM.yyyy")</Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="FlashcardSet" Context="set" Title="Действия" Width="120px">
+                <Template>
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Click="@(() => NavManager.NavigateTo($"/admin/flashcards/edit/{set.Id}"))" />
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+}
+
+@code {
+    List<FlashcardSet>? flashcardSets;
+    protected override async Task OnInitializedAsync() => flashcardSets = flashcardSets = await DbContext.FlashcardSets.AsNoTracking().OrderByDescending(f => f.CreatedAt).ToListAsync();
+}

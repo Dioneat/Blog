@@ -1,0 +1,82 @@
+﻿@page "/admin/categories"
+@layout AdminLayout
+@rendermode InteractiveServer
+@inject AppDbContext DbContext
+@inject DialogService DialogService
+
+<PageTitle>Управление категориями</PageTitle>
+
+<RadzenText TextStyle="TextStyle.H3" TagName="TagName.H1" class="rz-mb-4">Категории блога</RadzenText>
+
+<RadzenCard class="rz-mb-4" style="display: flex; gap: 10px; align-items: center;">
+    <RadzenTextBox @bind-Value="newCategoryName" Placeholder="Название новой категории..." style="width: 300px;" />
+    <RadzenButton Text="Добавить" Icon="add" ButtonStyle="ButtonStyle.Success" Click="@AddCategory" />
+</RadzenCard>
+
+<RadzenDataGrid Data="@categories" TItem="Category" AllowSorting="true">
+    <Columns>
+        <RadzenDataGridColumn TItem="Category" Property="Name" Title="Название категории" />
+        
+        <RadzenDataGridColumn TItem="Category" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Width="100px">
+            <Template Context="cat">
+                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium"
+                              Click="@(() => DeleteCategory(cat))" />
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    private List<Category> categories = new();
+    private string newCategoryName = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCategories();
+    }
+
+    private async Task LoadCategories()
+    {
+        categories = await DbContext.Categories.AsNoTracking().OrderBy(c => c.Name).ToListAsync();
+    }
+
+    private async Task AddCategory()
+    {
+        if (!string.IsNullOrWhiteSpace(newCategoryName))
+        {
+            var cleanName = newCategoryName.Trim();
+            
+            var exists = await DbContext.Categories.AnyAsync(c => EF.Functions.Like(c.Name, cleanName));
+            
+            if (!exists)
+            {
+                var newCat = new Category { Name = cleanName };
+                DbContext.Categories.Add(newCat);
+                await DbContext.SaveChangesAsync();
+                
+                
+                DbContext.Entry(newCat).State = EntityState.Detached;
+
+                newCategoryName = "";
+                await LoadCategories();
+            }
+            else
+            {
+            }
+        }
+    }
+
+    private async Task DeleteCategory(Category cat)
+    {
+        var result = await DialogService.Confirm($"Удалить категорию \"{cat.Name}\"?", "Подтверждение");
+        
+        if (result == true)
+        {
+            await DbContext.Categories
+                .Where(c => c.Id == cat.Id)
+                .ExecuteDeleteAsync();
+
+            await LoadCategories();
+        }
+    }
+}

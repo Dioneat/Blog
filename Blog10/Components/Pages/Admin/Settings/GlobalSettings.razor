@@ -1,0 +1,178 @@
+﻿@page "/admin/settings"
+@layout AdminLayout
+@rendermode InteractiveServer
+@using System.IO
+
+@inject IAuthService AuthService
+@inject SettingsService SettingsService
+@inject NotificationService Notification
+@inject AppDbContext DbContext
+
+<PageTitle>Настройки</PageTitle>
+
+<RadzenText TextStyle="TextStyle.H3" TagName="TagName.H1" class="rz-mb-4">Настройки системы</RadzenText>
+
+<RadzenStack Gap="2rem" style="max-width: 800px;">
+
+    @* --- НАСТРОЙКИ ДОСТУПА (ПРОФИЛЬ) --- *@
+    <RadzenCard class="rz-p-4" style="border-top: 4px solid var(--rz-primary);">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" class="rz-mb-4">
+            <i class="fa-solid fa-user-shield" style="font-size: 2rem; color: var(--rz-primary);"></i>
+            <RadzenText TextStyle="TextStyle.H5" class="rz-m-0">Настройки доступа</RadzenText>
+        </RadzenStack>
+
+        <RadzenTemplateForm TItem="ProfileModel" Data="@profileModel" Submit="OnSubmitProfile">
+            <RadzenStack Gap="1.5rem">
+                <RadzenFormField Text="Новый логин" style="width: 100%;">
+                    <RadzenTextBox @bind-Value="profileModel.Username" Name="Username" style="width: 100%;" />
+                    <RadzenRequiredValidator Component="Username" Text="Логин обязателен" />
+                </RadzenFormField>
+
+                <RadzenFormField Text="Новый пароль" style="width: 100%;">
+                    <RadzenPassword @bind-Value="profileModel.NewPassword" Name="Password" style="width: 100%;" />
+                    <RadzenRequiredValidator Component="Password" Text="Пароль обязателен" />
+                </RadzenFormField>
+
+                <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Icon="lock" Text="Обновить доступы" ButtonStyle="ButtonStyle.Primary" />
+            </RadzenStack>
+        </RadzenTemplateForm>
+    </RadzenCard>
+
+    @* --- ИНТЕГРАЦИИ: TELEGRAM --- *@
+    <RadzenCard class="rz-p-4" style="border-top: 4px solid #0088cc;">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" class="rz-mb-4">
+            <i class="fa-brands fa-telegram" style="font-size: 2rem; color: #0088cc;"></i>
+            <RadzenText TextStyle="TextStyle.H5" class="rz-m-0">Настройки Telegram</RadzenText>
+        </RadzenStack>
+
+        <RadzenStack Gap="1rem">
+            <RadzenFormField Text="Токен бота (BotFather)" style="width: 100%;">
+                <RadzenPassword @bind-Value="tgBotToken" style="width: 100%;" />
+            </RadzenFormField>
+            
+            <RadzenFormField Text="ID или Юзернейм канала (например: logoped_timofeeva)" style="width: 100%;">
+                <RadzenTextBox @bind-Value="tgChannelId" style="width: 100%;" />
+            </RadzenFormField>
+        </RadzenStack>
+    </RadzenCard>
+
+    @* --- ИНТЕГРАЦИИ: ВКОНТАКТЕ --- *@
+    <RadzenCard class="rz-p-4" style="border-top: 4px solid #0077ff;">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" class="rz-mb-4">
+            <i class="fa-brands fa-vk" style="font-size: 2rem; color: #0077ff;"></i>
+            <RadzenText TextStyle="TextStyle.H5" class="rz-m-0">Настройки ВКонтакте</RadzenText>
+        </RadzenStack>
+
+        <RadzenStack Gap="1rem">
+            <RadzenFormField Text="Сервисный ключ (для чтения стены)" style="width: 100%;">
+                <RadzenPassword @bind-Value="vkServiceToken" style="width: 100%;" />
+            </RadzenFormField>
+            
+            <RadzenFormField Text="Пользовательский токен (для публикации)" style="width: 100%;">
+                <RadzenPassword @bind-Value="vkUserToken" style="width: 100%;" />
+            </RadzenFormField>
+
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Wrap="FlexWrap.Wrap">
+                <RadzenFormField Text="Домен группы (например: logoped_timofeeva)" style="flex: 1; min-width: 200px;">
+                    <RadzenTextBox @bind-Value="vkDomain" style="width: 100%;" />
+                </RadzenFormField>
+                
+                <RadzenFormField Text="Цифровой ID группы (без минуса)" style="flex: 1; min-width: 200px;">
+                    <RadzenTextBox @bind-Value="vkGroupId" style="width: 100%;" />
+                </RadzenFormField>
+            </RadzenStack>
+        </RadzenStack>
+    </RadzenCard>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <RadzenAlert AlertStyle="AlertStyle.Danger" ShowIcon="true" class="rz-mb-4">
+            <b>Ошибка:</b> @errorMessage
+        </RadzenAlert>
+    }
+
+    <RadzenButton Text="Сохранить настройки интеграций" Icon="save" ButtonStyle="ButtonStyle.Success" Size="ButtonSize.Large" Click="SaveIntegrations" IsBusy="@isSaving" />
+
+
+</RadzenStack>
+
+@code {
+    public class ProfileModel
+    {
+        public string Username { get; set; } = "";
+        public string NewPassword { get; set; } = "";
+    }
+
+    private ProfileModel profileModel = new();
+    
+    private string tgBotToken = "";
+    private string tgChannelId = "";
+    private string vkServiceToken = "";
+    private string vkUserToken = "";
+    private string vkDomain = "";
+    private string vkGroupId = "";
+    
+    private bool isSaving = false;
+    private bool isCleaning = false;
+    private string errorMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            profileModel.Username = await AuthService.GetAdminUsernameAsync();
+            tgBotToken = await SettingsService.GetSettingAsync("TgBotToken") ?? "";
+            tgChannelId = await SettingsService.GetSettingAsync("TgChannelId") ?? "";
+            vkServiceToken = await SettingsService.GetSettingAsync("VkServiceToken") ?? "";
+            vkUserToken = await SettingsService.GetSettingAsync("VkUserToken") ?? "";
+            vkDomain = await SettingsService.GetSettingAsync("VkDomain") ?? "";
+            vkGroupId = await SettingsService.GetSettingAsync("VkGroupId") ?? "";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Ошибка при загрузке настроек: " + ex.Message;
+        }
+    }
+
+    private async Task OnSubmitProfile(ProfileModel model)
+    {
+        try
+        {
+            await AuthService.UpdateAdminPasswordAsync(model.Username, model.NewPassword);
+            Notification.Notify(NotificationSeverity.Success, "Доступы обновлены", "Логин и пароль успешно изменены.");
+            profileModel.NewPassword = "";
+        }
+        catch (Exception ex)
+        {
+            Notification.Notify(NotificationSeverity.Error, "Ошибка", ex.Message);
+        }
+    }
+
+    private async Task SaveIntegrations()
+    {
+        isSaving = true;
+        errorMessage = "";
+        StateHasChanged();
+
+        try
+        {
+            await SettingsService.SetSettingAsync("TgBotToken", tgBotToken);
+            await SettingsService.SetSettingAsync("TgChannelId", tgChannelId, encrypt: false);
+            
+            await SettingsService.SetSettingAsync("VkServiceToken", vkServiceToken);
+            await SettingsService.SetSettingAsync("VkUserToken", vkUserToken);
+            await SettingsService.SetSettingAsync("VkDomain", vkDomain, encrypt: false);
+            await SettingsService.SetSettingAsync("VkGroupId", vkGroupId, encrypt: false);
+
+            Notification.Notify(NotificationSeverity.Success, "Интеграции сохранены", "Настройки соцсетей успешно обновлены!");
+        }
+        catch (Exception ex)
+        {
+            Notification.Notify(NotificationSeverity.Error, "Ошибка сохранения", ex.Message);
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+}

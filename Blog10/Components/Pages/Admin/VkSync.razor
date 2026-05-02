@@ -1,0 +1,104 @@
+﻿@page "/admin/articles/vk-sync"
+@layout AdminLayout
+@rendermode InteractiveServer
+@inject VkSyncService SyncService
+@inject NotificationService Notification
+@inject NavigationManager NavManager
+
+<PageTitle>Синхронизация с ВК | Панель управления</PageTitle>
+
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" class="rz-mb-4">
+    <RadzenButton Icon="arrow_back" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Click="@(() => NavManager.NavigateTo("/admin/articles"))" title="Вернуться к статьям" />
+    <RadzenText TextStyle="TextStyle.H3" TagName="TagName.H1" class="rz-m-0">Импорт из ВКонтакте</RadzenText>
+</RadzenStack>
+
+<RadzenCard class="rz-p-4 rz-p-md-5 rz-mt-4" style="border-radius: 12px; border-left: 5px solid #0077ff; max-width: 750px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+    
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" class="rz-mb-4">
+        <i class="fa-brands fa-vk" style="font-size: 2rem; color: #0077ff;"></i>
+        <RadzenText TextStyle="TextStyle.H5" class="rz-m-0 rz-ml-2">Массовая загрузка постов</RadzenText>
+    </RadzenStack>
+
+    <RadzenText TextStyle="TextStyle.Body1" class="rz-mb-4" style="color: var(--text-color);">
+        Укажите количество последних записей на стене сообщества для проверки.
+        <br /><br />
+        <b style="color: var(--text-color);">Как работает импорт:</b>
+        <ul style="margin-top: 10px; padding-left: 20px; color: var(--text-secondary); line-height: 1.6;">
+            <li>Система сканирует указанное количество последних записей (от свежих к старым).</li>
+            <li>Пропускает посты, которые уже были загружены в базу ранее.</li>
+            <li>Извлекает текст (первое предложение автоматически становится заголовком) и самую большую картинку.</li>
+            <li>Сохраняет новые посты как <b>Черновики</b>. Вы ничего не опубликуете случайно на сайте.</li>
+        </ul>
+    </RadzenText>
+
+    <div class="rz-p-3 rz-mb-4" style="background: var(--rz-secondary-lighter); border-radius: 8px; border: 1px solid var(--rz-secondary-light);">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap" Gap="1rem">
+            <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-m-0">Глубина проверки (постов):</RadzenText>
+            <RadzenNumeric TValue="int" @bind-Value="postsToFetch" Min="1" Max="50" style="width: 120px; font-weight: bold;" />
+        </RadzenStack>
+    </div>
+
+    <RadzenButton Text="Запустить синхронизацию" Icon="cloud_download" ButtonStyle="ButtonStyle.Primary"
+                  IsBusy="@isSyncing" Click="RunSync" Size="ButtonSize.Large" class="rz-w-100 rz-w-md-auto" />
+</RadzenCard>
+
+@if (!string.IsNullOrEmpty(syncResult))
+{
+    <RadzenAlert AlertStyle="@alertStyle" ShowIcon="true" class="rz-mt-4" style="max-width: 750px; border-radius: 8px;">
+        <b>Результат:</b> @syncResult
+    </RadzenAlert>
+}
+
+@code {
+    private bool isSyncing = false;
+    private int postsToFetch = 10;
+    private string syncResult = "";
+    private int importedCount = 0;
+    
+    private AlertStyle alertStyle = AlertStyle.Info;
+
+    private async Task RunSync()
+    {
+        isSyncing = true;
+        syncResult = "";
+        StateHasChanged();
+
+        await Task.Delay(100);
+
+        try
+        {
+            var result = await SyncService.SyncPostsAsync(postsToFetch);
+            
+            importedCount = result.Imported;
+            syncResult = result.Message;
+
+            if (syncResult.Contains("Ошибка", StringComparison.OrdinalIgnoreCase) ||
+                syncResult.Contains("не настроены", StringComparison.OrdinalIgnoreCase))
+            {
+                alertStyle = AlertStyle.Danger; 
+                Notification.Notify(NotificationSeverity.Error, "Сбой", "Не удалось выполнить синхронизацию.");
+            }
+            else if (importedCount > 0)
+            {
+                alertStyle = AlertStyle.Success;
+                Notification.Notify(NotificationSeverity.Success, "Успех!", $"Загружено новых постов: {importedCount}");
+            }
+            else
+            {
+                alertStyle = AlertStyle.Info; 
+                Notification.Notify(NotificationSeverity.Info, "Завершено", "Новых постов не найдено.");
+            }
+        }
+        catch (Exception ex)
+        {
+            alertStyle = AlertStyle.Danger;
+            syncResult = $"Внутренняя ошибка интерфейса: {ex.Message}";
+            Notification.Notify(NotificationSeverity.Error, "Критическая ошибка", ex.Message);
+        }
+        finally
+        {
+            isSyncing = false;
+            StateHasChanged();
+        }
+    }
+}
